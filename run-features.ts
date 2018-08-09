@@ -77,7 +77,10 @@ program
         .addStepRunners(waitStepRunners)
         .addStepRunners(mqttStepRunners)
         .addStepRunners(webhookStepRunners)
-        .run();
+        .run()
+        .then(({success}) => {
+          if (!success) process.exit(1);
+        })
     },
   )
   .parse(process.argv);
