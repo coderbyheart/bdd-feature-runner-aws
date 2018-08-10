@@ -45,12 +45,10 @@ export class ThingHelper {
     await iot
       .attachThingPrincipal({ principal: certificateArn, thingName })
       .promise();
-    await iot
-      .attachPrincipalPolicy({
-        policyName: runner.world.testThingPolicy,
-        principal: certificateArn,
-      })
-      .promise();
+    await iot.addThingToThingGroup({
+      thingName,
+      thingGroupName: runner.world.TestThingGroup,
+    }).promise();
     const iotData = new IotData({
       endpoint: runner.world.iotEndpoint,
     });
@@ -74,42 +72,5 @@ export class ThingHelper {
       clientId: thingName,
       brokerHostname: runner.world.iotEndpoint,
     };
-  }
-
-  async removeThing(thing: ThingCredentials, policyName: string): Promise<any> {
-    const { clientId: thingName } = thing;
-
-    await iot
-      .detachPrincipalPolicy({
-        policyName,
-        principal: thing.certificateArn,
-      })
-      .promise();
-
-    await iot
-      .detachThingPrincipal({
-        thingName,
-        principal: thing.certificateArn,
-      })
-      .promise();
-
-    const certificateId = thing.certificateArn.split('/')[1];
-    await iot
-      .updateCertificate({
-        certificateId,
-        newStatus: 'INACTIVE',
-      })
-      .promise();
-
-    // Give time to detach
-    await new Promise(resolve => {
-      setTimeout(resolve, 1000);
-    });
-
-    await iot.deleteCertificate({ certificateId }).promise();
-
-    await iot.deleteThing({ thingName }).promise();
-
-    return `Thing ${thingName} deleted.`;
   }
 }

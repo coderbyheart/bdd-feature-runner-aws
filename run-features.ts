@@ -8,7 +8,6 @@ import { v4 } from 'uuid';
 import { DynamoDB } from 'aws-sdk';
 import { DynamoDBApiKeyRepository } from '@nrfcloud/api-persistence';
 import { ConsoleReporter } from './lib/console-reporter';
-import { cleanup } from './lifecycle/cleanup-iot';
 
 const db = new DynamoDB();
 const crypto = require('crypto');
@@ -25,8 +24,9 @@ export type ElivagarWorld = {
   webhookQueue: string;
   tenantUUID: string;
   iotEndpoint: string;
-  testThingPolicy: string;
-  thingPolicy: string;
+  TestThingGroup: string;
+  DeviceThingGroup: string;
+  AccountThingGroup: string;
   IrisPrefix: string;
 };
 
@@ -63,8 +63,9 @@ program
           webhookQueue: config.WebhookTestSQSQueueURL,
           tenantUUID: tenantUUID,
           iotEndpoint: config.iotEndpoint,
-          testThingPolicy: config.testThingPolicy,
-          thingPolicy: config.thingPolicy,
+          TestThingGroup: config.TestThingGroup,
+          AccountThingGroup: config.AccountThingGroup,
+          DeviceThingGroup: config.DeviceThingGroup,
           IrisPrefix: config.IrisPrefix,
         },
         {
@@ -82,8 +83,6 @@ program
         .addStepRunners(webhookStepRunners)
         .run()
         .then(async ({ success }) => {
-          console.log('Extra IoT cleanup');
-          await cleanup(runner);
           if (!success) process.exit(1);
         });
     },

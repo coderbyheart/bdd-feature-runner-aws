@@ -59,9 +59,6 @@ export const runners: StepRunner<ElivagarWorld>[] = [
         runner.store.clientId = thing.credentials.clientId;
         await thing.connect();
         runner.cleanup(() => thing.disconnect());
-        runner.cleanup(() =>
-          c.removeThing(thing.credentials, runner.world.testThingPolicy),
-        );
       }
       return thing.credentials.clientId;
     },
