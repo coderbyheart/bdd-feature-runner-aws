@@ -58,20 +58,20 @@ export class ConsoleReporter implements Reporter {
 
 const reportFeature = (result: FeatureResult) => {
   console.log('');
+  console.log('', chalk.yellow.bold(result.feature.name))
+  console.log('');
   const i = [' '];
 
   if (result.feature.skip) {
     i.push(
       chalk.magenta(' ↷ '),
-      chalk.gray(result.feature.name),
       chalk.magenta('(skipped)')
     );
   } else {
     i.push(
       result.success
-        ? chalk.green(' 💯 ')
-        : chalk.red.bold(' ❌ '),
-      chalk.yellow.bold(result.feature.name),
+        ? chalk.green(' 💯')
+        : chalk.red.bold(' ❌'),
     );
     if (result.runTime) {
       i.push(chalk.blue(`⏱ ${result.runTime}ms`));
@@ -126,7 +126,7 @@ const reportStep = (result: StepResult, config: Config) => {
     [
       ...(Array.isArray(result.result) ? result.result : [result.result]),
     ].forEach(r => {
-      console.log(chalk.cyan('   >>'), chalk.cyan(JSON.stringify(r)));
+      console.log(chalk.cyan('   ▶'), chalk.cyan(JSON.stringify(r)));
     });
   }
   if (result.error) {
@@ -135,7 +135,7 @@ const reportStep = (result: StepResult, config: Config) => {
       result.error.step.interpolatedText !== result.error.step.text
     ) {
       console.log(
-        chalk.grey('   >>'),
+        chalk.grey('   ▶'),
         chalk.grey(result.error.step.interpolatedText),
       );
     }
