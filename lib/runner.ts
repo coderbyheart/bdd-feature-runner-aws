@@ -5,6 +5,7 @@ import {
   Step,
 } from './load-features';
 import { ConsoleReporter } from './console-reporter';
+import { exponential } from 'backoff';
 
 const allSuccess = (r: boolean, result: Result) => (result.success ? r : false);
 
@@ -87,7 +88,7 @@ export class FeatureRunner<W> {
     await feature.children.reduce(
       (promise, scenario) =>
         promise.then(async () => {
-          scenarioResults.push(await this.runScenario(scenario));
+          scenarioResults.push(await this.retryScenario(scenario));
         }),
       Promise.resolve(),
     );
@@ -97,6 +98,36 @@ export class FeatureRunner<W> {
       feature,
       scenarioResults,
     };
+  }
+
+  /**
+   * Runs a scenario and retries it with a backoff
+   */
+  async retryScenario(scenario: Scenario): Promise<any> {
+    return new Promise(async resolve => {
+      // Run the scenario without delay
+      let lastResult: ScenarioResult = await this.runScenario(scenario);
+      if (lastResult.success) return resolve(lastResult);
+
+      // Now retry it, up to 25 seconds
+      const b = exponential({
+        randomisationFactor: 0,
+        initialDelay: 100,
+        maxDelay: 12800,
+      });
+      b.failAfter(8);
+      b.on('ready', async () => {
+        lastResult = await this.runScenario(scenario);
+        if (lastResult.success) return resolve(lastResult);
+        this.progress('retry', scenario.name);
+        // Retry scenario until timeout
+        b.backoff();
+      });
+      b.on('fail', () => {
+        resolve(lastResult);
+      });
+      b.backoff();
+    });
   }
 
   async runScenario(scenario: Scenario): Promise<ScenarioResult> {
@@ -287,6 +318,18 @@ export class StepRunnerNotDefinedError extends Error {
     this.name = StepRunnerNotDefinedError.name;
     Error.captureStackTrace(this, StepRunnerNotDefinedError);
     Object.setPrototypeOf(this, StepRunnerNotDefinedError.prototype);
+  }
+}
+
+export class RetryError extends Error {
+  step: InterpolatedStep;
+
+  constructor(step: InterpolatedStep) {
+    super('Retrying step failed!');
+    this.step = step;
+    this.name = RetryError.name;
+    Error.captureStackTrace(this, RetryError);
+    Object.setPrototypeOf(this, RetryError.prototype);
   }
 }
 
