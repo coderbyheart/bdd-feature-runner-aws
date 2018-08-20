@@ -22,35 +22,26 @@ export class WebhookReceiver {
    * When multiple alerts are configured, messages may result in the webhook
    * receiver receiving multiple requests from different alerts.
    *
-   * This receiver will wait until a request arrives for a specific message group
+   * This receiver will fetch a webhook request for a specific message group
    * id (which is the path after the API URL: {webhookReceiver}/message-group).
    *
    * Requests from other message groups will be discarded.
    */
-  async waitForWebhookRequest(
+  async receiveWebhookRequest(
     MessageGroupId: string,
     runner: FeatureRunner<any>,
-    wait = 30,
   ): Promise<WebhookRequest> {
-    const waitNow = Math.min(wait, 20);
-    if (waitNow <= 0) throw new Error('No webhook request received (Timeout)!');
     const { Messages } = await sqs
       .receiveMessage({
         QueueUrl: this.queueUrl,
         MaxNumberOfMessages: 1,
-        WaitTimeSeconds: waitNow,
         MessageAttributeNames: ['All'],
         AttributeNames: ['MessageGroupId'],
+        WaitTimeSeconds: 0,
       })
       .promise();
     if (Messages === undefined || !Messages.length) {
-      // Within our time limit no matching webhook request was received
-      runner.progress('Webhook', 'Wait timeout.');
-      return this.waitForWebhookRequest(
-        MessageGroupId,
-        runner,
-        Math.round(wait - waitNow),
-      );
+      throw new Error('No webhook request received!')
     }
     const {
       Body,
@@ -83,12 +74,7 @@ export class WebhookReceiver {
       JSON.stringify(this.latestWebhookRequest.body),
     );
     if (RcvdMessageGroupId !== MessageGroupId) {
-      // Ignore this one, we are waiting for the next
-      return this.waitForWebhookRequest(
-        MessageGroupId,
-        runner,
-        Math.round(wait - waitNow),
-      );
+      throw new Error('Wrong webhook request received!')
     }
     return this.latestWebhookRequest;
   }

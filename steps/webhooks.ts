@@ -11,7 +11,7 @@ export const runners: StepRunner<ElivagarWorld>[] = [
   {
     willRun: regexMatcher(/^the Webhook Receiver "([^"]+)" should be called$/),
     run: async ([MessageGroupId], _, runner) =>
-      r.waitForWebhookRequest(MessageGroupId, runner).then(r => r.body),
+      r.receiveWebhookRequest(MessageGroupId, runner).then(r => r.body),
   },
   {
     willRun: regexMatcher(
