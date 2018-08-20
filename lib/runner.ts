@@ -103,21 +103,25 @@ export class FeatureRunner<W> {
   /**
    * Runs a scenario and retries it with a backoff
    */
-  async retryScenario(scenario: Scenario): Promise<any> {
-    return new Promise(async resolve => {
+  async retryScenario(scenario: Scenario): Promise<ScenarioResult> {
+    return new Promise<ScenarioResult>(async resolve => {
       // Run the scenario without delay
       let lastResult: ScenarioResult = await this.runScenario(scenario);
       if (lastResult.success) return resolve(lastResult);
 
-      // Now retry it, up to 25 seconds
+      // Now retry it, up to 31 seconds
       const b = exponential({
         randomisationFactor: 0,
-        initialDelay: 100,
-        maxDelay: 12800,
+        initialDelay: 1000,
+        maxDelay: 16000,
       });
-      b.failAfter(8);
-      b.on('ready', async () => {
-        lastResult = await this.runScenario(scenario);
+      b.failAfter(5);
+      b.on('ready', async number => {
+        const r = await this.runScenario(scenario);
+        lastResult = {
+          ...r,
+          tries: number + 1,
+        };
         if (lastResult.success) return resolve(lastResult);
         this.progress('retry', scenario.name);
         // Retry scenario until timeout
@@ -172,6 +176,7 @@ export class FeatureRunner<W> {
       runTime: Date.now() - startRun,
       scenario,
       stepResults,
+      tries: 1,
     };
   }
 
@@ -270,6 +275,7 @@ export type StepResult = Result & {
 export type ScenarioResult = Result & {
   scenario: Scenario;
   stepResults: StepResult[];
+  tries: Number;
 };
 
 export type FeatureResult = Result & {
