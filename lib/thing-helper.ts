@@ -45,10 +45,12 @@ export class ThingHelper {
     await iot
       .attachThingPrincipal({ principal: certificateArn, thingName })
       .promise();
-    await iot.addThingToThingGroup({
-      thingName,
-      thingGroupName: runner.world.TestThingGroup,
-    }).promise();
+    await iot
+      .addThingToThingGroup({
+        thingName,
+        thingGroupName: runner.world.TestThingGroup,
+      })
+      .promise();
     const iotData = new IotData({
       endpoint: runner.world.iotEndpoint,
     });

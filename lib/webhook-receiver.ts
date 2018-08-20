@@ -41,7 +41,7 @@ export class WebhookReceiver {
       })
       .promise();
     if (Messages === undefined || !Messages.length) {
-      throw new Error('No webhook request received!')
+      throw new Error('No webhook request received!');
     }
     const {
       Body,
@@ -74,7 +74,7 @@ export class WebhookReceiver {
       JSON.stringify(this.latestWebhookRequest.body),
     );
     if (RcvdMessageGroupId !== MessageGroupId) {
-      throw new Error('Wrong webhook request received!')
+      throw new Error('Wrong webhook request received!');
     }
     return this.latestWebhookRequest;
   }
