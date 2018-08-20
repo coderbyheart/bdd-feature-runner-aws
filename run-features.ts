@@ -1,6 +1,5 @@
 import { FeatureRunner } from './lib/runner';
 import { runners as restStepRunners } from './steps/rest';
-import { runners as waitStepRunners } from './steps/wait';
 import { runners as mqttStepRunners } from './steps/mqtt';
 import { runners as webhookStepRunners } from './steps/webhooks';
 import { fetchStackConfiguration } from './lifecycle/fetch-stack-configuration';
@@ -78,7 +77,6 @@ program
 
       runner
         .addStepRunners(restStepRunners)
-        .addStepRunners(waitStepRunners)
         .addStepRunners(mqttStepRunners)
         .addStepRunners(webhookStepRunners)
         .run()
