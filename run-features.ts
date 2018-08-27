@@ -5,7 +5,7 @@ import { runners as webhookStepRunners } from './steps/webhooks';
 import { fetchStackConfiguration } from './lifecycle/fetch-stack-configuration';
 import { v4 } from 'uuid';
 import { DynamoDB } from 'aws-sdk';
-import { DynamoDBApiKeyRepository } from '@nrfcloud/api-persistence';
+import { DynamoDBApiKeyRepository } from '@nrfcloud/api-core';
 import { ConsoleReporter } from './lib/console-reporter';
 
 const db = new DynamoDB();
