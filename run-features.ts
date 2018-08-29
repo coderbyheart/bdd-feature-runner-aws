@@ -2,6 +2,7 @@ import { FeatureRunner } from './lib/runner';
 import { runners as restStepRunners } from './steps/rest';
 import { runners as mqttStepRunners } from './steps/mqtt';
 import { runners as webhookStepRunners } from './steps/webhooks';
+import { runners as irisStepRunners } from './steps/iris';
 import { fetchStackConfiguration } from './lifecycle/fetch-stack-configuration';
 import { v4 } from 'uuid';
 import { DynamoDB } from 'aws-sdk';
@@ -79,6 +80,7 @@ program
         .addStepRunners(restStepRunners)
         .addStepRunners(mqttStepRunners)
         .addStepRunners(webhookStepRunners)
+        .addStepRunners(irisStepRunners)
         .run()
         .then(async ({ success }) => {
           if (!success) process.exit(1);

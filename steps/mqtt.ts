@@ -11,8 +11,9 @@ const c = new ThingHelper();
 class TestThing {
   credentials: ThingCredentials;
   client: device;
-  mqttMessages: { [key: string]: object[] } = {};
   lastMqttMessage: object = {};
+  subscription?: Promise<object>;
+  cancelSubscription?: () => void;
 
   constructor(credentials: ThingCredentials) {
     this.credentials = credentials;
@@ -24,14 +25,6 @@ class TestThing {
       clientCert: Buffer.from(certificate, 'utf8'),
       caPath: './features/data/ca.cert',
       clientId,
-    });
-    this.client.on('message', (topic: string, payload: any) => {
-      if (!this.mqttMessages[topic]) {
-        this.mqttMessages[topic] = [];
-      }
-      const m = JSON.parse(payload.toString());
-      this.mqttMessages[topic].push(m);
-      this.lastMqttMessage = m;
     });
   }
 
@@ -75,19 +68,36 @@ export const runners: StepRunner<ElivagarWorld>[] = [
     },
   },
   {
-    willRun: regexMatcher(/^I should receive a message on the topic ([^ ]+)$/),
-    run: async ([topic], _, runner) =>
-      new Promise(resolve => {
+    willRun: regexMatcher(/^I am subscribed to the topic ([^ ]+)$/),
+    run: async ([topic], _, runner) => {
+      if (thing.cancelSubscription) {
+        thing.cancelSubscription();
+      }
+      thing.client.subscribe(topic);
+      thing.subscription = new Promise((resolve, reject) => {
+        const handle = setTimeout(() => reject(new Error('Timeout!')), 10000);
         thing.client.subscribe(topic);
-        thing.client.on('message', (topic, message) => {
-          runner.progress(`MQTT < ${topic}`, message.toString());
-          if (topic !== topic) {
-            return;
-          }
+        thing.client.on('message', (t: string, payload: any) => {
+          runner.progress(`MQTT < ${t}`, payload.toString());
           thing.client.unsubscribe(topic);
-          resolve(JSON.parse(message.toString()));
+          if (t !== topic) {
+            reject(new Error(`Unexpected topic: ${t}!`));
+          }
+          resolve(JSON.parse(payload.toString()));
         });
-      }),
+        thing.cancelSubscription = () => {
+          clearTimeout(handle);
+          thing.client.unsubscribe(topic);
+        };
+      });
+    },
+  },
+  {
+    willRun: regexMatcher(/^I should receive a message$/),
+    run: async () => {
+      if (!thing.subscription) throw new Error('Not subscribed!');
+      thing.lastMqttMessage = await thing.subscription;
+    },
   },
   {
     willRun: regexMatcher(

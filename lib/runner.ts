@@ -156,7 +156,8 @@ export class FeatureRunner<W> {
               stepResults.push(await this.runStep(step));
             }
           })
-          .catch(error => {
+          .catch(async error => {
+            await this.progress('step error', error);
             stepResults.push({
               success: false,
               step: {
@@ -216,20 +217,11 @@ export class FeatureRunner<W> {
     }
     const startRun = Date.now();
 
-    const result = await new Promise(async (resolve, reject) => {
-      setTimeout(() => reject(new Error('Timeout!')), 10000);
-      try {
-        resolve(
-          await matchedRunner.runner.run(
-            matchedRunner.args,
-            interpolatedStep,
-            this,
-          ),
-        );
-      } catch (err) {
-        reject(err);
-      }
-    });
+    const result = await matchedRunner.runner.run(
+      matchedRunner.args,
+      interpolatedStep,
+      this,
+    );
 
     return {
       success: true,
