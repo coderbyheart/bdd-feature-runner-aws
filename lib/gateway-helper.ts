@@ -8,14 +8,38 @@ export type Gateway = {
   thingName: string;
 };
 
+/**
+ * Creates fake Gateway devices for testing BLE features.
+ */
 export class GatewayHelper {
   async createTestGateway(
     runner: FeatureRunner<ElivagarWorld>,
   ): Promise<Gateway> {
     const thingName = v4();
+
+    // BLE Gateways have a specific ThingType
+    const thingTypeName = 'gateway_nordicsemi_ble_generic_generic_1-1';
+    try {
+      await iot
+        .describeThingType({
+          thingTypeName,
+        })
+        .promise();
+    } catch {
+      await iot
+        .createThingType({
+          thingTypeName,
+          thingTypeProperties: {
+            searchableAttributes: ['stage', 'tenantId'],
+          },
+        })
+        .promise();
+    }
+
     await iot
       .createThing({
         thingName,
+        thingTypeName,
         attributePayload: {
           attributes: {
             tenantId: runner.world.tenantUUID, // tenantId is IRIS legacy name
@@ -61,6 +85,13 @@ export class GatewayHelper {
                   },
                 },
               },
+            },
+            desired: {
+              desiredConnections: [
+                {
+                  id: deviceId,
+                },
+              ],
             },
           },
         }),
