@@ -59,7 +59,6 @@ export const runners: StepRunner<ElivagarWorld>[] = [
     async ([exp, expected]) => {
       const e = jsonata(exp);
       const v = e.evaluate(client.response.body);
-      console.dir(client.response.body)
       expect(v).to.equal(expected);
       return v;
     },
