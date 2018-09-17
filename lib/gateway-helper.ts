@@ -21,7 +21,7 @@ export class GatewayHelper {
     });
 
     // BLE Gateways have a specific ThingType
-    const thingTypeName = 'gateway_nordicsemi_ble_generic_generic_1-1';
+    const thingTypeName = process.env.IOT_GATEWAY_GROUP || 'gateway_nordicsemi_ble_generic_generic_1-1';
     try {
       await iot
         .describeThingType({
