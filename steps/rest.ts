@@ -25,7 +25,7 @@ export const runners: StepRunner<ElivagarWorld>[] = [
   s(/^the endpoint is "([^"]+)"$/, async ([endpoint]) => {
     client.endpoint = endpoint;
   }),
-  s(/^I (GET|POST|PATCH|DELETE) (?:to )?([^ ]+)$/, async ([method, path]) => {
+  s(/^I (GET|PUT|POST|PATCH|DELETE) (?:to )?([^ ]+)$/, async ([method, path]) => {
     return client.request(method, path);
   }),
   s(/^I GET ([^ ]+) with this query$/, async ([path], step) => {
@@ -75,14 +75,7 @@ export const runners: StepRunner<ElivagarWorld>[] = [
     },
   ),
   s(
-    /^I (POST|PATCH) (?:to )?([^ ]+) with "([^"]+)"$/,
-    async ([method, path, value]) => {
-      if (!value) throw new Error('Must provide a body value!');
-      return [await client.request(method, path, undefined, undefined, value), value];
-    },
-  ),
-  s(
-    /^I (POST|PATCH) (?:to )?([^ ]+) with this JSON$/,
+    /^I (POST|PUT|PATCH) (?:to )?([^ ]+) with this JSON$/,
     async ([method, path], step) => {
       if (!step.interpolatedArgument) throw new Error('Must provide argument!');
       const j = JSON.parse(step.interpolatedArgument);
