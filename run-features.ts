@@ -27,6 +27,7 @@ export type ElivagarWorld = {
   TestThingGroup: string;
   DeviceThingGroup: string;
   AccountThingGroup: string;
+  GatewayThingType: string;
   IrisPrefix: string;
 };
 
@@ -66,6 +67,7 @@ program
           TestThingGroup: config.TestThingGroup,
           AccountThingGroup: config.AccountThingGroup,
           DeviceThingGroup: config.DeviceThingGroup,
+          GatewayThingType: config.GatewayThingType,
           IrisPrefix: config.IrisPrefix,
         },
         {
