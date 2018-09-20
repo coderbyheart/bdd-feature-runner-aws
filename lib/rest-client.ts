@@ -45,7 +45,7 @@ export class RestClient {
     const res: Response = await fetch(url, {
       method,
       headers,
-      body: body ? (typeof body === 'object' ? JSON.stringify(body) : body) : undefined,
+      body: body ? (typeof body !== 'string' ? JSON.stringify(body) : body) : undefined,            
     });
     const contentType: string = res.headers.get('content-type') || '',
       mediaType: string = contentType.split(';')[0];
