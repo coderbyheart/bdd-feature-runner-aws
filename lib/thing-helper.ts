@@ -16,7 +16,7 @@ export class ThingHelper {
   async createTestThing(
     runner: FeatureRunner<ElivagarWorld>,
   ): Promise<ThingCredentials> {
-    const thingName = `${runner.world.stage}-${Math.random()
+    const thingName = `${runner.world.Stage}-${Math.random()
       .toString(36)
       .replace(/[^a-z]+/g, '')}`;
     await iot
@@ -25,7 +25,7 @@ export class ThingHelper {
         attributePayload: {
           attributes: {
             tenantUUID: runner.world.tenantUUID,
-            stage: runner.world.stage,
+            stage: runner.world.Stage,
           },
         },
       })

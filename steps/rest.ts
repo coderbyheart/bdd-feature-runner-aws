@@ -83,11 +83,15 @@ export const runners: StepRunner<ElivagarWorld>[] = [
     },
   ),
   s(
-    /^a page with ([0-9]+) of ([0-9]+) items? is returned$/,
+    /^a page with ([0-9]+)(?: of ([0-9]+))? items? is returned$/,
     async ([num, total]) => {
       expect(client.response.body).to.have.property('items');
       expect(client.response.body).to.have.property('total');
-      expect(client.response.body.total).to.equal(+total);
+      if (total) {
+        expect(client.response.body.total).to.equal(+total);
+      } else {
+        expect(client.response.body.total).to.be.at.least(+num);
+      }
       expect(client.response.body.items).to.have.length(+num);
       return client.response.body;
     },

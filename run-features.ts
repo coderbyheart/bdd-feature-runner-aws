@@ -17,7 +17,7 @@ const chalk = require('chalk');
 let ran = false;
 
 export type ElivagarWorld = {
-  stage: string;
+  Stage: string;
   apiKey: string;
   restEndpoint: string;
   webhookReceiver: string;
@@ -28,7 +28,6 @@ export type ElivagarWorld = {
   DeviceThingGroup: string;
   AccountThingGroup: string;
   GatewayThingType: string;
-  IrisPrefix: string;
 };
 
 program
@@ -57,8 +56,8 @@ program
 
       const runner = new FeatureRunner<ElivagarWorld>(
         {
-          stage: stackName,
           apiKey: apiKey,
+          Stage: config.Stage,
           restEndpoint: config.RestApiURL,
           webhookReceiver: config.WebhookTestApiURL,
           webhookQueue: config.WebhookTestSQSQueueURL,
@@ -68,7 +67,6 @@ program
           AccountThingGroup: config.AccountThingGroup,
           DeviceThingGroup: config.DeviceThingGroup,
           GatewayThingType: config.GatewayThingType,
-          IrisPrefix: config.IrisPrefix,
         },
         {
           dir: featureDir,
