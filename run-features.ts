@@ -22,7 +22,7 @@ export type ElivagarWorld = {
   restEndpoint: string;
   webhookReceiver: string;
   webhookQueue: string;
-  tenantUUID: string;
+  tenantId: string;
   iotEndpoint: string;
   TestThingGroup: string;
   DeviceThingGroup: string;
@@ -49,10 +49,10 @@ program
       const config = await fetchStackConfiguration(stackName);
 
       // Register API Key
-      const tenantUUID = v4();
+      const tenantId = v4();
       const apiKey = crypto.randomBytes(20).toString('hex');
       const apiKeyRepo = new DynamoDBApiKeyRepository(db, config.apiKeysTable);
-      await apiKeyRepo.storeTenantUUID(apiKey, tenantUUID);
+      await apiKeyRepo.storeTenantId(apiKey, tenantId);
 
       const runner = new FeatureRunner<ElivagarWorld>(
         {
@@ -61,7 +61,7 @@ program
           restEndpoint: config.RestApiURL,
           webhookReceiver: config.WebhookTestApiURL,
           webhookQueue: config.WebhookTestSQSQueueURL,
-          tenantUUID: tenantUUID,
+          tenantId: tenantId,
           iotEndpoint: config.iotEndpoint,
           TestThingGroup: config.TestThingGroup,
           AccountThingGroup: config.AccountThingGroup,

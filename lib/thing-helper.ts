@@ -24,7 +24,7 @@ export class ThingHelper {
         thingName,
         attributePayload: {
           attributes: {
-            tenantUUID: runner.world.tenantUUID,
+            tenantId: runner.world.tenantId,
             stage: runner.world.Stage,
           },
         },

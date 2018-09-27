@@ -45,7 +45,7 @@ export class GatewayHelper {
         thingTypeName,
         attributePayload: {
           attributes: {
-            tenantId: runner.world.tenantUUID, // tenantId is IRIS legacy name
+            tenantId: runner.world.tenantId, // tenantId is IRIS legacy name
             stage: runner.world.Stage,
           },
         },
@@ -59,7 +59,7 @@ export class GatewayHelper {
       .promise();
     await iotData
       .publish({
-        topic: `${runner.world.Stage}/${runner.world.tenantUUID}/admin/c2a`,
+        topic: `${runner.world.Stage}/${runner.world.tenantId}/admin/c2a`,
         payload: JSON.stringify({
           type: 'event',
           event: {
@@ -118,7 +118,7 @@ export class GatewayHelper {
     await iotData
       .publish({
         topic: `${runner.world.Stage}/${
-          runner.world.tenantUUID
+          runner.world.tenantId
         }/gateways/${thingName}/c2a`,
         payload: JSON.stringify({
           requestId: 'N/A',
