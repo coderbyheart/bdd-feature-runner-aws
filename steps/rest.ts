@@ -99,14 +99,11 @@ export const runners: StepRunner<ElivagarWorld>[] = [
       return client.response.body;
     },
   ),
-  s(
-    /^a page is returned$/,
-    async () => {
-      expect(client.response.body).to.have.property('items');
-      expect(client.response.body).to.have.property('total');
-      return client.response.body;
-    },
-  ),
+  s(/^a page is returned$/, async () => {
+    expect(client.response.body).to.have.property('items');
+    expect(client.response.body).to.have.property('total');
+    return client.response.body;
+  }),
   s(
     /^I store "([^"]+)" of the response body as "([^"]+)"$/,
     async ([expression, storeName], _, runner) => {
