@@ -88,6 +88,19 @@ export class FeatureRunner<W> {
     await feature.children.reduce(
       (promise, scenario) =>
         promise.then(async () => {
+          if (
+            scenarioResults.length &&
+            !scenarioResults[scenarioResults.length - 1].success
+          ) {
+            scenarioResults.push({
+              success: false,
+              scenario,
+              tries: 0,
+              stepResults: [],
+              skipped: true,
+            });
+            return;
+          }
           scenarioResults.push(await this.retryScenario(scenario));
         }),
       Promise.resolve(),
@@ -178,6 +191,7 @@ export class FeatureRunner<W> {
       scenario,
       stepResults,
       tries: 1,
+      skipped: false,
     };
   }
 
@@ -268,6 +282,7 @@ export type ScenarioResult = Result & {
   scenario: Scenario;
   stepResults: StepResult[];
   tries: Number;
+  skipped: boolean;
 };
 
 export type FeatureResult = Result & {

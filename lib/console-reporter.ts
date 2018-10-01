@@ -76,9 +76,14 @@ const reportFeature = (result: FeatureResult) => {
 const reportScenario = (result: ScenarioResult) => {
   console.log('');
   const i = [chalk.gray(result.scenario.type)];
-  if (result.scenario.name) i.push(chalk.yellow(result.scenario.name));
-  if (result.runTime) i.push(chalk.blue(`⏱ ${result.runTime}ms`));
-  if (result.tries > 1) i.push(chalk.red(`⏱ ${result.tries}x`));
+  if (result.skipped) {
+    i.push(chalk.magenta(' ↷ '), chalk.magenta('(skipped)'));
+    if (result.scenario.name) i.push(chalk.gray(result.scenario.name));
+  } else {
+    if (result.scenario.name) i.push(chalk.yellow(result.scenario.name));
+    if (result.runTime) i.push(chalk.blue(`⏱ ${result.runTime}ms`));
+    if (result.tries > 1) i.push(chalk.red(`⏱ ${result.tries}x`));
+  }
   console.log('', ...i);
   console.log('');
 };
