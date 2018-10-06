@@ -28,6 +28,7 @@ export type ElivagarWorld = {
   DeviceThingGroup: string;
   AccountThingGroup: string;
   GatewayThingType: string;
+  IrisBackendEventBusTestTopic: string;
 };
 
 program
@@ -67,6 +68,7 @@ program
           AccountThingGroup: config.AccountThingGroup,
           DeviceThingGroup: config.DeviceThingGroup,
           GatewayThingType: config.GatewayThingType,
+          IrisBackendEventBusTestTopic: config.IrisBackendEventBusTestTopic,
         },
         {
           dir: featureDir,

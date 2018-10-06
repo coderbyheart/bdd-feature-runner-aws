@@ -5,6 +5,7 @@ import { device } from 'aws-iot-device-sdk';
 import { expect } from 'chai';
 import { ElivagarWorld } from '../run-features';
 import { ThingCredentials, ThingHelper } from '../lib/thing-helper';
+import { EventBus, DevicePairedEvent } from '@nrfcloud/service-common';
 
 const c = new ThingHelper();
 
@@ -48,7 +49,7 @@ export const runners: StepRunner<ElivagarWorld>[] = [
     willRun: regexMatcher(/^I have a Test Device/),
     run: async (_, __, runner) => {
       if (!thing) {
-        thing = new TestThing(await c.createTestThing(runner));
+        thing = new TestThing(await c.createTestThingWithCredentials(runner));
         runner.store.clientId = thing.credentials.clientId;
         await thing.connect();
         runner.cleanup(() => thing.disconnect());
@@ -120,6 +121,44 @@ export const runners: StepRunner<ElivagarWorld>[] = [
       const e = jsonata(exp);
       const result = e.evaluate(thing.lastMqttMessage);
       expect(result).to.deep.equal(expected);
+    },
+  },
+  {
+    willRun: regexMatcher(/^I have paired a nRF91 DK as ([^ ]+)$/),
+    run: async ([id], __, runner) => {
+      // This registers a fake DK thing like it would happen in Iris,
+      // The API listens to a DevicePairedEvent to be published on the Iris Event Bus, which we also publish
+      const dk = await c.createTestThing(
+        runner,
+        ({ Stage, tenantId }, thingName) => ({
+          desired: {
+            stage: Stage,
+            pairing: {
+              state: 'paired',
+              topics: {
+                d2c: `${Stage}/${tenantId}/m/d/${thingName}/d2c`,
+                c2d: `${Stage}/${tenantId}/m/d/${thingName}/c2d`,
+              },
+            },
+          },
+          reported: {
+            connected: true,
+            stage: Stage,
+            pairing: {
+              state: 'paired',
+              topics: {
+                d2c: `${Stage}/${tenantId}/m/d/${thingName}/d2c`,
+                c2d: `${Stage}/${tenantId}/m/d/${thingName}/c2d`,
+              },
+            },
+            elivagar: '1',
+          },
+        }),
+      );
+      runner.store[id] = dk;
+      const b = new EventBus(runner.world.IrisBackendEventBusTestTopic);
+      await b.publish(new DevicePairedEvent(runner.world.tenantId, dk));
+      return dk;
     },
   },
 ];

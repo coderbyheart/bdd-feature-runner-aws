@@ -15,7 +15,8 @@ export type ThingCredentials = {
 export class ThingHelper {
   async createTestThing(
     runner: FeatureRunner<ElivagarWorld>,
-  ): Promise<ThingCredentials> {
+    state: (world: ElivagarWorld, thingName: string) => object,
+  ): Promise<string> {
     const thingName = `${runner.world.Stage}-${Math.random()
       .toString(36)
       .replace(/[^a-z]+/g, '')}`;
@@ -30,6 +31,34 @@ export class ThingHelper {
         },
       })
       .promise();
+    await iot
+      .addThingToThingGroup({
+        thingName,
+        thingGroupName: runner.world.TestThingGroup,
+      })
+      .promise();
+    const iotData = new IotData({
+      endpoint: runner.world.iotEndpoint,
+    });
+    await iotData
+      .updateThingShadow({
+        payload: JSON.stringify({
+          state: state(runner.world as ElivagarWorld, thingName),
+        }),
+        thingName,
+      })
+      .promise();
+    return thingName;
+  }
+
+  async createTestThingWithCredentials(
+    runner: FeatureRunner<ElivagarWorld>,
+  ): Promise<ThingCredentials> {
+    const thingName = await this.createTestThing(runner, () => ({
+      reported: {
+        elivagar: 1,
+      },
+    }));
     const {
       certificateArn,
       certificatePem,
@@ -44,27 +73,6 @@ export class ThingHelper {
     }
     await iot
       .attachThingPrincipal({ principal: certificateArn, thingName })
-      .promise();
-    await iot
-      .addThingToThingGroup({
-        thingName,
-        thingGroupName: runner.world.TestThingGroup,
-      })
-      .promise();
-    const iotData = new IotData({
-      endpoint: runner.world.iotEndpoint,
-    });
-    await iotData
-      .updateThingShadow({
-        payload: JSON.stringify({
-          state: {
-            reported: {
-              elivagar: 1,
-            },
-          },
-        }),
-        thingName,
-      })
       .promise();
     return {
       privateKey: PrivateKey,
