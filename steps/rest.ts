@@ -67,6 +67,15 @@ export const runners: StepRunner<ElivagarWorld>[] = [
     },
   ),
   s(
+    /^"([^"]+)" of the response body should equal ([0-9]+)$/,
+    async ([exp, expected]) => {
+      const e = jsonata(exp);
+      const v = e.evaluate(client.response.body);
+      expect(v).to.equal(+expected);
+      return v;
+    },
+  ),
+  s(
     /^"([^"]+)" of the response body should equal this JSON$/,
     async ([exp], step) => {
       if (!step.interpolatedArgument) throw new Error('Must provide argument!');
