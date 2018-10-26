@@ -114,12 +114,18 @@ export const runners: StepRunner<ElivagarWorld>[] = [
     return client.response.body;
   }),
   s(
-    /^I store "([^"]+)" of the response body as "([^"]+)"$/,
-    async ([expression, storeName], _, runner) => {
+    /^I store "([^"]+)" of the response body as "([^"]+)"(?: encoded with (encodeURIComponent))?$/,
+    async ([expression, storeName, encoder], _, runner) => {
       const e = jsonata(expression);
       const result = e.evaluate(client.response.body);
       expect(result).to.not.be.an('undefined');
-      runner.store[storeName] = result;
+      switch (encoder) {
+        case 'encodeURIComponent':
+          runner.store[storeName] = encodeURIComponent(result);
+          break;
+        default:
+          runner.store[storeName] = result;
+      }
       return result;
     },
   ),
