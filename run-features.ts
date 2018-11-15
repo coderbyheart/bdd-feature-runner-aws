@@ -47,28 +47,29 @@ program
     ) => {
       ran = true;
 
-      const config = await fetchStackConfiguration(stackName);
+      const mainStackConfig = await fetchStackConfiguration(stackName);
+      const testStackConfig = await fetchStackConfiguration(mainStackConfig.TestStack);
 
       // Register API Key
       const tenantId = v4();
       const apiKey = crypto.randomBytes(20).toString('hex');
-      const apiKeyRepo = new DynamoDBApiKeyRepository(db, config.apiKeysTable);
+      const apiKeyRepo = new DynamoDBApiKeyRepository(db, mainStackConfig.apiKeysTable);
       await apiKeyRepo.storeTenantId(apiKey, tenantId);
 
       const runner = new FeatureRunner<ElivagarWorld>(
         {
           apiKey: apiKey,
-          Stage: config.Stage,
-          restEndpoint: config.RestApiURL,
-          webhookReceiver: config.WebhookTestApiURL,
-          webhookQueue: config.WebhookTestSQSQueueURL,
+          Stage: mainStackConfig.Stage,
+          restEndpoint: mainStackConfig.RestApiURL,
+          webhookReceiver: testStackConfig.WebhookTestApiURL,
+          webhookQueue: testStackConfig.WebhookTestSQSQueueURL,
           tenantId: tenantId,
-          iotEndpoint: config.iotEndpoint,
-          TestThingGroup: config.TestThingGroup,
-          AccountThingGroup: config.AccountThingGroup,
-          DeviceThingGroup: config.DeviceThingGroup,
-          GatewayThingType: config.GatewayThingType,
-          IrisBackendEventBusTestTopic: config.IrisBackendEventBusTestTopic,
+          iotEndpoint: mainStackConfig.iotEndpoint,
+          TestThingGroup: testStackConfig.TestThingGroup,
+          AccountThingGroup: mainStackConfig.AccountThingGroup,
+          DeviceThingGroup: mainStackConfig.DeviceThingGroup,
+          GatewayThingType: mainStackConfig.GatewayThingType,
+          IrisBackendEventBusTestTopic: testStackConfig.IrisBackendEventBusTestTopic,
         },
         {
           dir: featureDir,
