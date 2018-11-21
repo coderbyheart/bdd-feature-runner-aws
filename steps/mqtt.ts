@@ -44,6 +44,8 @@ class TestThing {
 
 let thing: TestThing;
 
+const connections: { [key: string]: device } = {};
+
 export const runners: StepRunner<ElivagarWorld>[] = [
   {
     willRun: regexMatcher(/^I have a Test Device/),
@@ -159,6 +161,72 @@ export const runners: StepRunner<ElivagarWorld>[] = [
       const b = new EventBus(runner.world.IrisBackendEventBusTestTopic);
       await b.publish(new DevicePairedEvent(runner.world.tenantId, dk));
       return dk;
+    },
+  },
+  {
+    willRun: regexMatcher(
+      /^I am connected to "([^"]+)" using the certificate "([^"]+)" and the private key "([^"]+)" as "([^"]+)"$/m,
+    ),
+    run: ([broker, certificate, privateKey, clientId]) =>
+      new Promise(resolve => {
+        if (connections[clientId]) {
+          return resolve(`Already connected using clientId "${clientId}" ...`);
+        }
+
+        console.log(
+          JSON.stringify(
+            {
+              host: broker,
+              privateKey: Buffer.from(privateKey, 'utf8'),
+              clientCert: Buffer.from(certificate, 'utf8'),
+              caPath: './features/data/ca.cert',
+              clientId,
+            },
+            null,
+            2,
+          ),
+        );
+
+        connections[clientId] = new device({
+          host: broker,
+          privateKey: Buffer.from(privateKey, 'utf8'),
+          clientCert: Buffer.from(certificate, 'utf8'),
+          caPath: './features/data/ca.cert',
+          clientId,
+        });
+
+        connections[clientId].on('connect', () => {
+          resolve();
+        });
+
+        connections[clientId].on('error', err => {
+          throw err;
+        });
+      }),
+  },
+  {
+    willRun: regexMatcher(/^I disconnect as "([^"]+)"$/),
+    run: async ([clientId]) => {
+      if (!connections[clientId]) {
+        throw new Error(`Not connected using clientId "${clientId}"!`);
+      }
+      connections[clientId].end();
+      delete connections[clientId];
+    },
+  },
+  {
+    willRun: regexMatcher(
+      /^I publish this message on the topic ([^ ]+) as "([^"]+)"$/,
+    ),
+    run: async ([topic, clientId], step, runner) => {
+      if (!step.interpolatedArgument) throw new Error('Must provide argument!');
+      if (!connections[clientId]) {
+        throw new Error(`Not connected using clientId "${clientId}"!`);
+      }
+      console.log(topic, step.interpolatedArgument);
+      connections[clientId].publish(topic, step.interpolatedArgument);
+      runner.progress(`MQTT > ${topic}`, step.interpolatedArgument);
+      return JSON.parse(step.interpolatedArgument);
     },
   },
 ];

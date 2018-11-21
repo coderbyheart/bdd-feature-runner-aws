@@ -48,12 +48,17 @@ program
       ran = true;
 
       const mainStackConfig = await fetchStackConfiguration(stackName);
-      const testStackConfig = await fetchStackConfiguration(mainStackConfig.TestStack);
+      const testStackConfig = await fetchStackConfiguration(
+        mainStackConfig.TestStack,
+      );
 
       // Register API Key
       const tenantId = v4();
       const apiKey = crypto.randomBytes(20).toString('hex');
-      const apiKeyRepo = new DynamoDBApiKeyRepository(db, mainStackConfig.apiKeysTable);
+      const apiKeyRepo = new DynamoDBApiKeyRepository(
+        db,
+        mainStackConfig.apiKeysTable,
+      );
       await apiKeyRepo.storeTenantId(apiKey, tenantId);
 
       const runner = new FeatureRunner<ElivagarWorld>(
@@ -69,7 +74,8 @@ program
           AccountThingGroup: mainStackConfig.AccountThingGroup,
           DeviceThingGroup: mainStackConfig.DeviceThingGroup,
           GatewayThingType: mainStackConfig.GatewayThingType,
-          IrisBackendEventBusTestTopic: testStackConfig.IrisBackendEventBusTestTopic,
+          IrisBackendEventBusTestTopic:
+            testStackConfig.IrisBackendEventBusTestTopic,
         },
         {
           dir: featureDir,
