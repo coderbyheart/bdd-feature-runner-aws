@@ -223,7 +223,6 @@ export const runners: StepRunner<ElivagarWorld>[] = [
       if (!connections[clientId]) {
         throw new Error(`Not connected using clientId "${clientId}"!`);
       }
-      console.log(topic, step.interpolatedArgument);
       connections[clientId].publish(topic, step.interpolatedArgument);
       runner.progress(`MQTT > ${topic}`, step.interpolatedArgument);
       return JSON.parse(step.interpolatedArgument);
