@@ -16,5 +16,6 @@ phases:
     - npm run lint
   build:
     commands:
+      - npx tsc
       - npx greenkeeper-lockfile-upload
       - npm i semantic-release; npx semantic-release || true

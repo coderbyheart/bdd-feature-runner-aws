@@ -6,7 +6,7 @@ import { regexMatcher } from '../lib/regexMatcher';
 
 const client = new RestClient();
 
-export const runners = <W extends Store>(): StepRunner<W>[] => {
+export const restStepRunners = <W extends Store>(): StepRunner<W>[] => {
   const s = (rx: RegExp, run: StepRunnerFunc<W>): StepRunner<W> => ({
     willRun: regexMatcher(rx),
     run,
