@@ -35,7 +35,7 @@ export type SkippableFeature = Feature & {
   skip: boolean;
 };
 
-function parseFeatures(featureData: Buffer[]): SkippableFeature[] {
+export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
   const parsedFeatures: Feature[] = featureData.map(d => {
     // Parse the feature files
     const scanner = new Gherkin.TokenScanner(d.toString());
@@ -87,7 +87,7 @@ function parseFeatures(featureData: Buffer[]): SkippableFeature[] {
       skip: !!skip,
     };
   });
-}
+};
 
 export const fromDirectory = async (
   dir: string,

@@ -3,7 +3,9 @@ import * as querystring from 'querystring';
 const { fetch } = require('fetch-ponyfill')();
 
 const toQueryString = (obj: object): string => {
-  if (!Object.keys(obj).length) return '';
+  if (!Object.keys(obj).length) {
+    return '';
+  }
   return '?' + querystring.stringify(obj);
 };
 
@@ -53,16 +55,18 @@ export class RestClient {
     });
     const contentType: string = res.headers.get('content-type') || '',
       mediaType: string = contentType.split(';')[0];
-    if (headers.Accept.indexOf(mediaType) < 0)
+    if (headers.Accept.indexOf(mediaType) < 0) {
       throw new Error(
         `The content-type "${contentType}" of the response does not match accepted media-type ${
           headers.Accept
         }`,
       );
-    if (/^application\/([^ \/]+\+)?json$/.test(mediaType) === false)
+    }
+    if (/^application\/([^ \/]+\+)?json$/.test(mediaType) === false) {
       throw new Error(
         `The content-type "${contentType}" of the response is not JSON!`,
       );
+    }
     const statusCode: number = res.status;
     const contentLength: number = +(res.headers.get('content-length') || 0);
     const h: Headers = {};

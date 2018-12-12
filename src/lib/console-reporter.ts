@@ -13,7 +13,7 @@ import * as Chai from 'chai';
 type Config = { printResults: boolean; printProgress: boolean };
 
 export class ConsoleReporter implements Reporter {
-  private config: Config;
+  private readonly config: Config;
   private lastProgress?: number;
 
   constructor(config: Config = { printResults: false, printProgress: false }) {
@@ -41,13 +41,16 @@ export class ConsoleReporter implements Reporter {
   }
 
   async progress(type: string, info?: string) {
-    if (!this.config.printProgress) return;
+    if (!this.config.printProgress) {
+      return;
+    }
     const i = [' ', chalk.magenta(' ℹ '), chalk.cyan(type)];
     if (info) {
       i.push(chalk.grey(info));
     }
-    if (this.lastProgress)
+    if (this.lastProgress) {
       i.push(chalk.blue(`⏱ +${Date.now() - this.lastProgress}ms`));
+    }
     this.lastProgress = Date.now();
     console.log(...i);
   }
@@ -78,11 +81,19 @@ const reportScenario = (result: ScenarioResult) => {
   const i = [chalk.gray(result.scenario.type)];
   if (result.skipped) {
     i.push(chalk.magenta(' ↷ '), chalk.magenta('(skipped)'));
-    if (result.scenario.name) i.push(chalk.gray(result.scenario.name));
+    if (result.scenario.name) {
+      i.push(chalk.gray(result.scenario.name));
+    }
   } else {
-    if (result.scenario.name) i.push(chalk.yellow(result.scenario.name));
-    if (result.runTime) i.push(chalk.blue(`⏱ ${result.runTime}ms`));
-    if (result.tries > 1) i.push(chalk.red(`⏱ ${result.tries}x`));
+    if (result.scenario.name) {
+      i.push(chalk.yellow(result.scenario.name));
+    }
+    if (result.runTime) {
+      i.push(chalk.blue(`⏱ ${result.runTime}ms`));
+    }
+    if (result.tries > 1) {
+      i.push(chalk.red(`⏱ ${result.tries}x`));
+    }
   }
   console.log('', ...i);
   console.log('');
@@ -93,8 +104,12 @@ const reportRunResult = (success: boolean, runTime?: Number) => {
   const i = [
     success ? chalk.green(' 💯 ALL PASS ') : chalk.red.bold(' 💀 FAIL 👎 '),
   ];
-  if (runTime) i.push(chalk.blue(`⏱ ${runTime}ms`));
-  if (success) i.push('');
+  if (runTime) {
+    i.push(chalk.blue(`⏱ ${runTime}ms`));
+  }
+  if (success) {
+    i.push('');
+  }
   console.log(' ', ...i);
   console.log('');
 };
@@ -109,7 +124,9 @@ const reportStep = (result: StepResult, config: Config) => {
     if (result.success) {
       i.push(chalk.green(' ✔ '));
       i.push(chalk.yellow(result.step.interpolatedText));
-      if (result.runTime) i.push(chalk.blue(`⏱ ${result.runTime}ms`));
+      if (result.runTime) {
+        i.push(chalk.blue(`⏱ ${result.runTime}ms`));
+      }
     } else {
       i.push(chalk.red.bold(' ❌ '));
       i.push(chalk.red.bold(result.step.interpolatedText));

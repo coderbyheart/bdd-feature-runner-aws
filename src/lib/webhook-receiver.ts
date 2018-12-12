@@ -11,7 +11,7 @@ type WebhookRequest = {
  * Manages the waiting for webhook requests.
  */
 export class WebhookReceiver {
-  private queueUrl: string;
+  private readonly queueUrl: string;
   latestWebhookRequest?: WebhookRequest;
 
   constructor(queueUrl: string) {
@@ -43,12 +43,7 @@ export class WebhookReceiver {
     if (Messages === undefined || !Messages.length) {
       throw new Error('No webhook request received!');
     }
-    const {
-      Body,
-      MessageAttributes,
-      ReceiptHandle,
-      Attributes,
-    } = Messages[0] as SQS.Types.Message;
+    const { Body, MessageAttributes, ReceiptHandle, Attributes } = Messages[0];
     await sqs
       .deleteMessage({
         QueueUrl: this.queueUrl,

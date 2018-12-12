@@ -16,10 +16,10 @@ export type Cleaner = <W extends Store>(
 ) => Promise<any>;
 
 export class FeatureRunner<W> {
-  private featuresDir: string;
-  private reporters: Reporter[];
-  private stepRunners: StepRunner<W>[] = [];
-  private cleaners: Cleaner[] = [];
+  private readonly featuresDir: string;
+  private readonly reporters: Reporter[];
+  private readonly stepRunners: StepRunner<W>[] = [];
+  private readonly cleaners: Cleaner[] = [];
   public store: Store;
   public world: Store;
 
@@ -77,12 +77,13 @@ export class FeatureRunner<W> {
 
   async runFeature(feature: SkippableFeature): Promise<FeatureResult> {
     await this.progress('feature', feature.name);
-    if (feature.skip)
+    if (feature.skip) {
       return {
         feature,
         success: true,
         scenarioResults: [],
       };
+    }
     const startRun = Date.now();
     const scenarioResults: ScenarioResult[] = [];
     await feature.children.reduce(
@@ -120,8 +121,9 @@ export class FeatureRunner<W> {
     return new Promise<ScenarioResult>(async resolve => {
       // Run the scenario without delay
       let lastResult: ScenarioResult = await this.runScenario(scenario);
-      if (lastResult.success) return resolve(lastResult);
-
+      if (lastResult.success) {
+        return resolve(lastResult);
+      }
       // Now retry it, up to 31 seconds
       const b = exponential({
         randomisationFactor: 0,
@@ -129,13 +131,15 @@ export class FeatureRunner<W> {
         maxDelay: 16000,
       });
       b.failAfter(5);
-      b.on('ready', async number => {
+      b.on('ready', async num => {
         const r = await this.runScenario(scenario);
         lastResult = {
           ...r,
-          tries: number + 1,
+          tries: num + 1,
         };
-        if (lastResult.success) return resolve(lastResult);
+        if (lastResult.success) {
+          return resolve(lastResult);
+        }
         this.progress('retry', scenario.name);
         // Retry scenario until timeout
         b.backoff();
@@ -205,18 +209,21 @@ export class FeatureRunner<W> {
         : undefined,
     };
 
-    if (afterRx.test(step.text))
+    if (afterRx.test(step.text)) {
       return {
         success: true,
         step: interpolatedStep,
         skipped: false,
       };
+    }
 
     const matchedRunner: {
       runner: StepRunner<W>;
       args: string[];
     } = this.stepRunners.reduce((matchedRunner: any, runner) => {
-      if (matchedRunner) return matchedRunner;
+      if (matchedRunner) {
+        return matchedRunner;
+      }
       const args = runner.willRun(interpolatedStep);
       if (args) {
         return {
@@ -259,8 +266,9 @@ export class FeatureRunner<W> {
       text,
     );
     const missed = interpolated.match(/\{[^}\W]+\}/g);
-    if (missed && missed.length)
+    if (missed && missed.length) {
       throw new StoreKeyUndefinedError(missed.map(k => k.slice(1, -1)), data);
+    }
     return interpolated;
   }
 }
