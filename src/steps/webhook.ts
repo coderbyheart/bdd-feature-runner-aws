@@ -35,7 +35,9 @@ export const webhookStepRunners = <W extends StoreWithWorld>(): StepRunner<
   {
     willRun: regexMatcher(/^the webhook request body should equal this JSON$/),
     run: async (_, step) => {
-      if (!step.interpolatedArgument) throw new Error('Must provide argument!');
+      if (!step.interpolatedArgument) {
+        throw new Error('Must provide argument!');
+      }
       const j = JSON.parse(step.interpolatedArgument);
       const b = r.latestWebhookRequest && r.latestWebhookRequest.body;
       expect(b).not.to.be.an('undefined');
