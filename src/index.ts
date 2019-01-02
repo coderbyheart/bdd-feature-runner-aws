@@ -6,3 +6,4 @@ export * from './lib/rest-client';
 export * from './lib/load-features';
 export * from './lifecycle/fetch-stack-configuration';
 export * from './steps/rest';
+export * from './steps/webhook';
