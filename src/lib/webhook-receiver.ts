@@ -64,7 +64,7 @@ export class WebhookReceiver {
       ),
       body: JSON.parse(Body as string),
     };
-    runner.progress(
+    await runner.progress(
       `Webhook < ${RcvdMessageGroupId}`,
       JSON.stringify(this.latestWebhookRequest.body),
     );

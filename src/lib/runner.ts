@@ -140,7 +140,7 @@ export class FeatureRunner<W> {
         if (lastResult.success) {
           return resolve(lastResult);
         }
-        this.progress('retry', scenario.name);
+        await this.progress('retry', scenario.name);
         // Retry scenario until timeout
         b.backoff();
       });
