@@ -79,25 +79,26 @@ export const appSyncStepRunners = <
         return [q, result];
       },
     ),
-    s(/^the GQL query should succeed$/, async (_, __, runner) => {
-      const { appSyncClient: client } = runner.store;
-      expect(client.response).to.have.property('data');
-      expect(client.response.data).to.have.property(client.selection);
-      const opResult = client.response.data[client.selection];
-      expect(opResult).to.have.property('success');
-      const success = opResult.success;
-      const error = opResult.error;
-      if (!success && error) {
-        throw new Error(
-          `GQL query failed with error "${JSON.stringify(error)}"!`,
-        );
-      }
-      if (!success) {
-        throw new Error(
-          'GQL query failed but no error information was present!',
-        );
-      }
-    }),
+    s(
+      /^the GQL query result should not contain errors$/,
+      async (_, __, runner) => {
+        const { appSyncClient: client } = runner.store;
+        expect(client.response).to.not.have.property('errors');
+      },
+    ),
+    s(
+      /^the GQL query result should contain this error$/,
+      async (_, step, runner) => {
+        const { appSyncClient: client } = runner.store;
+        if (!step.interpolatedArgument) {
+          throw new Error('Must provide argument!');
+        }
+        expect(client.response).to.have.property('errors');
+        expect(client.response.errors).to.containSubset([
+          JSON.parse(step.interpolatedArgument),
+        ]);
+      },
+    ),
     // This checks the entire response
     s(
       /^(?:"([^"]+)" of )?the GQL response should (equal|match) this JSON$/,
