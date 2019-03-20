@@ -23,12 +23,29 @@ export type Scenario = {
   steps: Step[];
   argument: string;
   keyword: string;
+  examples?: Example[];
 };
 export type Feature = {
   type: 'Feature';
   name: string;
   children: Scenario[];
   tags: { type: 'Tag'; name: string }[];
+};
+export type Example = {
+  type: 'Example';
+  keyword: string;
+  name: string;
+  description?: string;
+  tableHeader: TableRow;
+  tableBody: TableRow[];
+};
+export type TableRow = {
+  type: 'TableRow';
+  cells: Cell[];
+};
+export type Cell = {
+  type: 'TableCell';
+  value: string;
 };
 
 export type SkippableFeature = Feature & {

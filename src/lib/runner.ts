@@ -102,7 +102,42 @@ export class FeatureRunner<W> {
             });
             return;
           }
-          scenarioResults.push(await this.retryScenario(scenario));
+
+          if (scenario.type === 'ScenarioOutline' && scenario.examples) {
+            const example = scenario.examples[0];
+            const header = example.tableHeader.cells.map(({ value }) => value);
+            await example.tableBody.reduce(
+              (promise, example) =>
+                promise.then(async () => {
+                  const values = example.cells.map(({ value }) => value);
+                  const replace = (str: string) =>
+                    header.reduce(
+                      (str, _, k) => str.replace(`<${header[k]}>`, values[k]),
+                      str,
+                    );
+                  const s: Scenario = {
+                    type: 'Scenario',
+                    keyword: 'Scenario',
+                    argument: scenario.argument,
+                    name: `${scenario.name} (${values.join(',')})`,
+                    steps: scenario.steps.map(step => ({
+                      ...step,
+                      text: replace(step.text),
+                      argument: step.argument
+                        ? {
+                            ...step.argument,
+                            content: replace(step.argument.content),
+                          }
+                        : undefined,
+                    })),
+                  };
+                  scenarioResults.push(await this.retryScenario(s));
+                }),
+              Promise.resolve(),
+            );
+          } else {
+            scenarioResults.push(await this.retryScenario(scenario));
+          }
         }),
       Promise.resolve(),
     );
