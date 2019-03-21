@@ -152,11 +152,14 @@ export const appSyncStepRunners = <
       },
     ),
     s(
-      /^I store "([^"]+)" of the GQL operation result as "([^"]+)"$/,
+      /^I store (?:"([^"]+)" of )?the GQL operation result as "([^"]+)"$/,
       async ([expression, storeName], _, runner) => {
         const { appSyncClient: client } = runner.store;
-        const e = jsonata(expression);
-        const result = e.evaluate(client.response.data[client.selection]);
+        let result = client.response.data[client.selection];
+        if (expression) {
+          const e = jsonata(expression);
+          result = e.evaluate(result);
+        }
         expect(result).to.not.be.an('undefined');
         runner.store[storeName] = result;
         return result;
