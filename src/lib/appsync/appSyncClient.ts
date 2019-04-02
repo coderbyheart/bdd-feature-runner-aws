@@ -6,6 +6,8 @@ export type AppSyncClient = {
   selection: string;
   response: { [key: string]: any };
   variables: { [key: string]: string };
+  authorization: 'IAM' | 'API_KEY';
+  apiKey?: string;
   subscriptions: { [key: string]: GQLSubscription };
   subscriptionQueries: { [key: string]: string };
   listenerSubscription: {
@@ -20,6 +22,7 @@ export const AppSyncClient = (): AppSyncClient => ({
   selection: '',
   response: {},
   variables: {},
+  authorization: 'IAM',
   subscriptions: {},
   subscriptionQueries: {},
   listenerSubscription: {},

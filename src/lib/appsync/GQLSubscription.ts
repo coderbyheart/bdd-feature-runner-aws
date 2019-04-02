@@ -32,15 +32,7 @@ export class GQLSubscription {
       this.messages.push(result);
       // tslint:disable-next-line:no-floating-promises
       runner.progress('<GQL@', msg.payloadString);
-      this.subscribers.forEach(({ id, matches, onMatch }) => {
-        if (matches(result)) {
-          if (!this.subscriberMessages[id]) {
-            this.subscriberMessages[id] = [];
-          }
-          this.subscriberMessages[id].push(result);
-          onMatch.forEach(fn => fn(result));
-        }
-      });
+      this.notifySubcribers(result);
     };
 
     this.connection = new Promise((resolve, reject) => {
@@ -66,6 +58,18 @@ export class GQLSubscription {
     });
   }
 
+  notifySubcribers = (result: any) => {
+    this.subscribers.forEach(({ id, matches, onMatch }) => {
+      if (matches(result)) {
+        if (!this.subscriberMessages[id]) {
+          this.subscriberMessages[id] = [];
+        }
+        this.subscriberMessages[id].push(result);
+        onMatch.forEach(fn => fn(result));
+      }
+    });
+  };
+
   addListener = (listenerId: string, matcher: object) => {
     this.subscribers.push({
       id: listenerId,
@@ -79,6 +83,8 @@ export class GQLSubscription {
       },
       onMatch: [],
     });
+    // Notify about existing messages
+    this.messages.forEach(message => this.notifySubcribers(message));
   };
 
   disconnect = () => {

@@ -9,8 +9,9 @@ import * as chai from 'chai';
 import { expect } from 'chai';
 import * as jsonata from 'jsonata';
 import { AppSyncClient } from '../lib/appsync/appSyncClient';
-import { query } from '../lib/appsync/query';
+import { queryWithIAM } from '../lib/appsync/queryWithIAM';
 import { subscribe } from '../lib/appsync/subscribe';
+import { queryWithApiKey } from '../lib/appsync/queryWithApiKey';
 
 const chaiSubset = require('chai-subset');
 
@@ -31,6 +32,24 @@ export const appSyncAfterAll = async (runner: FeatureRunner<Store>) => {
 
 export type AppSyncStepRunnerStore = Store & {
   appSyncClient: AppSyncClient;
+};
+
+const getQuery = (store: Store, client: AppSyncClient, userId?: string) => {
+  if (client.authorization === 'API_KEY') {
+    if (userId) {
+      throw new Error('API_KEY authorization does not support user argument!');
+    }
+    return queryWithApiKey(client.apiKey!, client.endpoint);
+  } else {
+    const prefix = userId ? `cognito:${userId}` : `cognito`;
+    const {
+      [`${prefix}:AccessKeyId`]: AccessKeyId,
+      [`${prefix}:SecretKey`]: SecretKey,
+      [`${prefix}:SessionToken`]: SessionToken,
+    } = store;
+
+    return queryWithIAM(AccessKeyId, SecretKey, SessionToken, client.endpoint);
+  }
 };
 
 /**
@@ -55,19 +74,12 @@ export const appSyncStepRunners = <
         if (!step.interpolatedArgument) {
           throw new Error('Must provide argument!');
         }
-        const prefix = userId ? `cognito:${userId}` : `cognito`;
-        const {
-          [`${prefix}:AccessKeyId`]: AccessKeyId,
-          [`${prefix}:SecretKey`]: SecretKey,
-          [`${prefix}:SessionToken`]: SessionToken,
-        } = runner.store;
         const q = step.interpolatedArgument.replace(/\n\s*/g, ' ');
         await runner.progress('GQL>', q);
+
+        const query = getQuery(runner.store, client, userId);
+
         const { result, operation, selection } = await query(
-          AccessKeyId,
-          SecretKey,
-          SessionToken,
-          client.endpoint,
           q,
           client.variables,
         );
@@ -223,6 +235,21 @@ export const appSyncStepRunners = <
       },
     ),
     s(
+      /^the GQL queries are authorized with Cognito$/,
+      async (_, __, runner) => {
+        const { appSyncClient: client } = runner.store;
+        client.authorization = 'IAM';
+      },
+    ),
+    s(
+      /^the GQL queries are authorized with the API key "([^"]+)"$/,
+      async ([apiKey], __, runner) => {
+        const { appSyncClient: client } = runner.store;
+        client.authorization = 'API_KEY';
+        client.apiKey = apiKey;
+      },
+    ),
+    s(
       /^I set the GQL variable "([^"]+)" to "([^"]+)"$/,
       async ([name, value], _, runner) => {
         const { appSyncClient: client } = runner.store;
@@ -257,15 +284,15 @@ export const appSyncStepRunners = <
           }
           variables = JSON.parse(step.interpolatedArgument);
         }
-        if (!client.subscriptions[key]) {
-          client.subscriptions[key] = await subscribe(
-            client,
-            runner,
-            client.subscriptionQueries[subscriptionId],
-            userId,
-            variables,
-          );
-        }
+
+        const query = getQuery(runner.store, client, userId);
+
+        client.subscriptions[key] = await subscribe(
+          runner,
+          client.subscriptionQueries[subscriptionId],
+          query,
+          variables,
+        );
       },
     ),
     s(

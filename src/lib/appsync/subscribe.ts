@@ -1,35 +1,26 @@
 import { FeatureRunner } from '../runner';
-import { AppSyncClient } from './appSyncClient';
-import { query } from './query';
 import { GQLSubscription } from './GQLSubscription';
 
 export const subscribe = async (
-  client: AppSyncClient,
   runner: FeatureRunner<any>,
   subscription: string,
-  userId: string,
+  query: (
+    gqlQuery: string,
+    variables?: { [key: string]: string },
+  ) => Promise<{
+    operation: string;
+    selection: string;
+    result: any;
+  }>,
   variables?: { [key: string]: string },
 ) => {
-  const prefix = userId ? `cognito:${userId}` : `cognito`;
-  const {
-    [`${prefix}:AccessKeyId`]: AccessKeyId,
-    [`${prefix}:SecretKey`]: SecretKey,
-    [`${prefix}:SessionToken`]: SessionToken,
-  } = runner.store;
   const q = subscription.replace(/\n\s*/g, ' ');
   await runner.progress('GQL@', `${q}`);
   if (variables) {
     await runner.progress('GQL@', JSON.stringify(variables));
   }
 
-  const { selection, result } = await query(
-    AccessKeyId,
-    SecretKey,
-    SessionToken,
-    client.endpoint,
-    q,
-    variables,
-  );
+  const { selection, result } = await query(q, variables);
 
   const {
     data,
