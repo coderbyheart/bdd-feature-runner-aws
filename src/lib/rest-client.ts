@@ -2,7 +2,7 @@ import * as querystring from 'querystring';
 
 const { fetch } = require('fetch-ponyfill')();
 
-const toQueryString = (obj: object): string => {
+const toQueryString = (obj: any): string => {
   if (!Object.keys(obj).length) {
     return '';
   }
