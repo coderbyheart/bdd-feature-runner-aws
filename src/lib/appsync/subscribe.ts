@@ -22,14 +22,21 @@ export const subscribe = async (
 
   const { selection, result } = await query(q, variables);
 
-  const {
-    data,
-    extensions: {
-      subscription: { mqttConnections },
-    },
-  } = result;
-  await runner.progress('<GQL', JSON.stringify(data));
-  const { url, client: clientId, topics } = mqttConnections[0];
+  if (result.errors) {
+    throw new Error(
+      `MQTT subscription failed: ${JSON.stringify(result.errors)}`,
+    );
+  }
 
+  const { data, extensions } = result;
+
+  await runner.progress('<GQL', JSON.stringify(data));
+
+  if (!extensions) {
+    throw new Error('MQTT subscription response did not return extensions');
+  }
+
+  const { mqttConnections } = extensions.subscription;
+  const { url, client: clientId, topics } = mqttConnections[0];
   return new GQLSubscription(selection, url, clientId, topics, runner);
 };
