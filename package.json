@@ -1,5 +1,5 @@
 {
-  "name": "@nrfcloud/bdd-feature-runner-aws",
+  "name": "@coderbyheart/bdd-feature-runner-aws",
   "version": "0.0.0-development",
   "description": "BDD Test Runner for cloud native applications made with AWS",
   "main": "dist/index.js",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nRFCloud/bdd-feature-runner-aws.git"
+    "url": "https://github.com/coderbyheart/bdd-feature-runner-aws.git"
   },
   "keywords": [
     "nRFCloud",
@@ -23,9 +23,9 @@
   "author": "Nordic Semiconductor ASA | nordicsemi.no",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/nRFCloud/bdd-feature-runner-aws/issues"
+    "url": "https://github.com/coderbyheart/bdd-feature-runner-aws/issues"
   },
-  "homepage": "https://github.com/nRFCloud/bdd-feature-runner-aws#readme",
+  "homepage": "https://github.com/coderbyheart/bdd-feature-runner-aws#readme",
   "dependencies": {
     "@types/backoff": "^2.5.1",
     "@types/chai": "^4.1.7",
