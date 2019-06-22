@@ -6,3 +6,5 @@
 
 An implementation of a [Gherkin](https://docs.cucumber.io/gherkin/) feature runner 
 for cloud native applications made with AWS.
+
+Example usage: [bdd-feature-runner-aws-example](https://github.com/coderbyheart/bdd-feature-runner-aws-example).
