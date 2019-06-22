@@ -57,9 +57,7 @@ export class RestClient {
       mediaType: string = contentType.split(';')[0];
     if (headers.Accept.indexOf(mediaType) < 0) {
       throw new Error(
-        `The content-type "${contentType}" of the response does not match accepted media-type ${
-          headers.Accept
-        }`,
+        `The content-type "${contentType}" of the response does not match accepted media-type ${headers.Accept}`,
       );
     }
     if (/^application\/([^ \/]+\+)?json$/.test(mediaType) === false) {
