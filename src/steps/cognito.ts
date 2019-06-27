@@ -88,7 +88,7 @@ export const cognitoStepRunners = <
           .getOpenIdTokenForDeveloperIdentity({
             IdentityPoolId: runner.world.identityPoolId,
             Logins: {
-              ['iris-backend']: runner.store[`${prefix}:Username`],
+              ['bdd-feature-runner-aws']: runner.store[`${prefix}:Username`],
             },
             TokenDuration: 3600,
           })
@@ -104,6 +104,7 @@ export const cognitoStepRunners = <
           .promise();
 
         runner.store[`${prefix}:IdentityId`] = IdentityId;
+        runner.store[`${prefix}:Token`] = Token;
         runner.store[`${prefix}:AccessKeyId`] = Credentials!.AccessKeyId;
         runner.store[`${prefix}:SecretKey`] = Credentials!.SecretKey;
         runner.store[`${prefix}:SessionToken`] = Credentials!.SessionToken;
