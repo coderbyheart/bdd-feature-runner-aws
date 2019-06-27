@@ -21,9 +21,11 @@ export type CognitoStepRunnerStore = Store & {
 /**
  * BDD steps for authenticating against AWS Cognito
  */
-export const cognitoStepRunners = <
-  W extends CognitoStepRunnerStore
->(): StepRunner<W>[] => [
+export const cognitoStepRunners = ({
+  developerProviderName,
+}: {
+  developerProviderName: string;
+}) => <W extends CognitoStepRunnerStore>(): StepRunner<W>[] => [
   {
     willRun: regexMatcher(
       /^I am authenticated with Cognito(?: as "([^"]+)")?$/,
@@ -88,7 +90,7 @@ export const cognitoStepRunners = <
           .getOpenIdTokenForDeveloperIdentity({
             IdentityPoolId: runner.world.identityPoolId,
             Logins: {
-              ['bdd-feature-runner-aws']: runner.store[`${prefix}:Username`],
+              [developerProviderName]: runner.store[`${prefix}:Username`],
             },
             TokenDuration: 3600,
           })
