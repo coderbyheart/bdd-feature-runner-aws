@@ -21,11 +21,11 @@ export type CognitoStepRunnerStore = Store & {
 /**
  * BDD steps for authenticating against AWS Cognito
  */
-export const cognitoStepRunners = ({
+export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
   developerProviderName,
 }: {
   developerProviderName: string;
-}) => <W extends CognitoStepRunnerStore>(): StepRunner<W>[] => [
+}): StepRunner<W>[] => [
   {
     willRun: regexMatcher(
       /^I am authenticated with Cognito(?: as "([^"]+)")?$/,
