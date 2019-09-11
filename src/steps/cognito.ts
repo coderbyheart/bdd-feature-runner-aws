@@ -2,8 +2,12 @@ import { StepRunner, Store } from '../lib/runner'
 import { regexMatcher } from '../lib/regexMatcher'
 import { CognitoIdentity, CognitoIdentityServiceProvider } from 'aws-sdk'
 
-const ci = new CognitoIdentity()
-const cisp = new CognitoIdentityServiceProvider()
+const ci = new CognitoIdentity({
+	region: process.env.AWS_DEFAULT_REGION,
+})
+const cisp = new CognitoIdentityServiceProvider({
+	region: process.env.AWS_DEFAULT_REGION,
+})
 
 const randSeq = () =>
 	Math.random()
