@@ -1,11 +1,11 @@
-import { InterpolatedStep } from './runner';
+import { InterpolatedStep } from './runner'
 
 export const regexMatcher = (rx: RegExp) => (
-  step: InterpolatedStep,
+	step: InterpolatedStep,
 ): false | string[] => {
-  const m = step.interpolatedText.match(rx);
-  if (!m) {
-    return false;
-  }
-  return m.slice(1);
-};
+	const m = rx.exec(step.interpolatedText)
+	if (!m) {
+		return false
+	}
+	return m.slice(1)
+}
