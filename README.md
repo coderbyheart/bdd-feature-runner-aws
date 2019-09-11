@@ -1,7 +1,7 @@
 # BDD Feature Runner for AWS
 
 [![npm version](https://img.shields.io/npm/v/@coderbyheart/bdd-feature-runner-aws.svg)](https://www.npmjs.com/package/@coderbyheart/bdd-feature-runner-aws)
-[![Build Status](https://travis-ci.org/coderbyheart/bdd-feature-runner-aws.svg?branch=saga)](https://travis-ci.org/coderbyheart/bdd-feature-runner-aws)
+[![GitHub Actions](https://github.com/coderbyheart/bdd-feature-runner-aws/workflows/Test%20and%20Release/badge.svg)](https://github.com/coderbyheart/bdd-feature-runner-aws/actions)
 [![Greenkeeper badge](https://badges.greenkeeper.io/coderbyheart/bdd-feature-runner-aws.svg)](https://greenkeeper.io/) 
 
 An implementation of a [Gherkin](https://docs.cucumber.io/gherkin/) feature runner 
