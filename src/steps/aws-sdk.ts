@@ -13,7 +13,7 @@ export const awsSdkStepRunners = <W>({
 	region: string
 }): StepRunner<W>[] => [
 	{
-		willRun: regexMatcher(/^I execute "([^"]+)" of the ([^ ]+) AWS SDK with$/),
+		willRun: regexMatcher(/^I execute "([^"]+)" of the AWS ([^ ]+) SDK with$/),
 		run: async ([method, api], step, runner) => {
 			if (!step.interpolatedArgument) {
 				throw new Error('Must provide argument!')
@@ -36,7 +36,7 @@ export const awsSdkStepRunners = <W>({
 	},
 	{
 		willRun: regexMatcher(
-			/^(?:"([^"]+)" of )?the AWS SDK result should (equal|match) this JSON$/,
+			/^(?:"([^"]+)" of )?the execution result should (equal|match) this JSON$/,
 		),
 		run: async ([exp, equalOrMatch], step, runner) => {
 			const { awsSdk } = runner.store
