@@ -26,8 +26,10 @@ export type CognitoStepRunnerStore = Store & {
  */
 export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
 	developerProviderName,
+	emailAsUsername,
 }: {
 	developerProviderName: string
+	emailAsUsername?: boolean
 }): StepRunner<W>[] => [
 	{
 		willRun: regexMatcher(
@@ -37,13 +39,14 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
 			const prefix = userId ? `cognito:${userId}` : `cognito`
 			if (!runner.store[`${prefix}:IdentityId`]) {
 				const Username = userId ? `${userId}-${randSeq()}` : randSeq()
-				await runner.progress('Cognito', `Registering user ${Username}`)
-				const TemporaryPassword = `${randSeq()}${randSeq().toUpperCase()}${Math.random()}`
 				const email = `${Username.toLowerCase()}@example.com`
+				const cognitoUsername = emailAsUsername ? email : Username
+				await runner.progress('Cognito', `Registering user ${cognitoUsername}`)
+				const TemporaryPassword = `${randSeq()}${randSeq().toUpperCase()}${Math.random()}`
 				await cisp
 					.adminCreateUser({
 						UserPoolId: runner.world.userPoolId,
-						Username,
+						Username: cognitoUsername,
 						UserAttributes: [
 							{
 								Name: 'email',
@@ -65,7 +68,7 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
 						UserPoolId: runner.world.userPoolId,
 						ClientId: runner.world.userPoolClientId,
 						AuthParameters: {
-							USERNAME: Username,
+							USERNAME: cognitoUsername,
 							PASSWORD: TemporaryPassword,
 						},
 					})
@@ -78,7 +81,7 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
 						ClientId: runner.world.userPoolClientId,
 						Session: Session!,
 						ChallengeResponses: {
-							USERNAME: Username,
+							USERNAME: cognitoUsername,
 							NEW_PASSWORD: newPassword,
 						},
 					})
@@ -86,7 +89,7 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
 
 				runner.store[`${prefix}:IdToken`] = AuthenticationResult!.IdToken
 
-				runner.store[`${prefix}:Username`] = Username
+				runner.store[`${prefix}:Username`] = cognitoUsername
 				runner.store[userId ? `${userId}:Email` : 'Email'] = email
 
 				const { IdentityId, Token } = await ci
