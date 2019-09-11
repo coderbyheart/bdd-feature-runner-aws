@@ -133,11 +133,19 @@ const reportStep = (result: StepResult, config: Config) => {
 		}
 	}
 	console.log(...i)
+	if (result.step.interpolatedArgument) {
+		console.log(
+			chalk.yellow.dim('   ▶ '),
+			chalk.yellow.dim(
+				result.step.interpolatedArgument.replace(/\n\s*/g, ' ').trimLeft(),
+			),
+		)
+	}
 	if (result.result && config.printResults) {
 		;[
 			...(Array.isArray(result.result) ? result.result : [result.result]),
 		].forEach(r => {
-			console.log(chalk.cyan('   ▶'), chalk.cyan(JSON.stringify(r)))
+			console.log(chalk.cyan('   ◀ '), chalk.cyan(JSON.stringify(r)))
 		})
 	}
 	if (result.error) {
