@@ -15,7 +15,6 @@ export type CognitoStepRunnerStore = Store & {
 	identityPoolId: string
 	userPoolClientId: string
 	region: string
-	eventsTable: string
 }
 
 /**
