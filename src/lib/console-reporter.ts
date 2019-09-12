@@ -58,20 +58,25 @@ export class ConsoleReporter implements Reporter {
 
 const reportFeature = (result: FeatureResult) => {
 	console.log('')
-	console.log('', chalk.yellow.bold(result.feature.name))
-	console.log('')
-	const i = [' ']
+	const i = []
 
 	if (result.feature.skip) {
-		i.push(chalk.magenta(' ↷ '), chalk.magenta('(skipped)'))
+		i.push(
+			'',
+			chalk.yellow.strikethrough.dim(result.feature.name),
+			chalk.magenta('↷ (skipped)'),
+		)
 	} else {
+		console.log('', chalk.yellow.bold(result.feature.name))
+		console.log('')
+
 		i.push(result.success ? chalk.green(' 💯') : chalk.red.bold(' ❌'))
 		if (result.runTime) {
 			i.push(chalk.blue(`⏱ ${result.runTime}ms`))
 		}
 	}
 	if (result.feature.tags.length) {
-		i.push(chalk.magenta(result.feature.tags.map(({ name }) => name)))
+		i.push(chalk.blueBright(result.feature.tags.map(({ name }) => name)))
 	}
 	console.log(...i)
 }
