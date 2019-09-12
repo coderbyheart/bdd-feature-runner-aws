@@ -20,17 +20,24 @@ export class FeatureRunner<W> {
 	private readonly reporters: Reporter[]
 	private readonly stepRunners: StepRunner<W>[] = []
 	private readonly cleaners: Cleaner[] = []
+	private readonly retry: boolean
 	public store: Store
 	public world: Store
 
 	constructor(
 		world: W,
-		options: { dir: string; reporters?: Reporter[]; store?: Store },
+		options: {
+			dir: string
+			reporters?: Reporter[]
+			store?: Store
+			retry?: boolean
+		},
 	) {
 		this.world = world
 		this.featuresDir = options.dir
 		this.reporters = options.reporters || [new ConsoleReporter()]
 		this.store = options.store || {}
+		this.retry = options.retry === undefined ? true : options.retry
 	}
 
 	addStepRunners(runners: StepRunner<W>[]): FeatureRunner<W> {
@@ -131,12 +138,20 @@ export class FeatureRunner<W> {
 												: undefined,
 										})),
 									}
-									scenarioResults.push(await this.retryScenario(s))
+									if (this.retry) {
+										scenarioResults.push(await this.retryScenario(s))
+									} else {
+										scenarioResults.push(await this.runScenario(s))
+									}
 								}),
 							Promise.resolve(),
 						)
 					} else {
-						scenarioResults.push(await this.retryScenario(scenario))
+						if (this.retry) {
+							scenarioResults.push(await this.retryScenario(scenario))
+						} else {
+							scenarioResults.push(await this.runScenario(scenario))
+						}
 					}
 				}),
 			Promise.resolve(),
