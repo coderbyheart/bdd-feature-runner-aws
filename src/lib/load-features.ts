@@ -58,9 +58,15 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 		const scanner = new Gherkin.TokenScanner(d.toString())
 		return parser.parse(scanner, matcher).feature
 	})
-	const featureNames = parsedFeatures.map(({ name }) => name)
+
+	// Sort @Last to end
+	const sortedByLast = parsedFeatures.sort(({ tags: t1 }) =>
+		t1.find(({ name }) => name === '@Last') ? 1 : -1,
+	)
+
+	const featureNames = sortedByLast.map(({ name }) => name)
 	// Sort the features by the step 'I am run after the "..." feature' using toposort
-	const featureDependencies = parsedFeatures.map(feature => {
+	const featureDependencies = sortedByLast.map(feature => {
 		const bg = feature.children.find(({ type }) => type === 'Background')
 		if (bg) {
 			const afterStep = bg.steps.find(({ text }) => afterRx.test(text))
