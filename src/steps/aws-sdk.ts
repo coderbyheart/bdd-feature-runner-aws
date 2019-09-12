@@ -61,4 +61,29 @@ export const awsSdkStepRunners = <W>({
 			return [fragment]
 		},
 	},
+	{
+		willRun: regexMatcher(
+			/^(?:"([^"]+)" of )?the execution result should equal ([0-9]+)$/,
+		),
+		run: async ([exp, num], _, runner) => {
+			const { awsSdk } = runner.store
+			const result = awsSdk.res
+			const fragment = exp ? jsonata(exp).evaluate(result) : result
+			expect(fragment).to.equal(parseInt(num, 10))
+			return [fragment]
+		},
+	},
+	{
+		willRun: regexMatcher(
+			/^I store "([^"]+)" of the execution result as "([^"]+)"$/,
+		),
+		run: async ([expression, storeName], _, runner) => {
+			const e = jsonata(expression)
+			const { awsSdk } = runner.store
+			const result = e.evaluate(awsSdk.res)
+			expect(result).to.not.be.an('undefined')
+			runner.store[storeName] = result
+			return result
+		},
+	},
 ]
