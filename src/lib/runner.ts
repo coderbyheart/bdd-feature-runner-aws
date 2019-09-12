@@ -62,7 +62,29 @@ export class FeatureRunner<W> {
 		await features.reduce(
 			(promise, feature) =>
 				promise.then(async () => {
-					featureResults.push(await this.runFeature(feature))
+					let skip = false
+					if (feature.dependsOn) {
+						const dep = feature.dependsOn
+						const dependendRun = featureResults.find(
+							({ feature: { name } }) => name === dep.name,
+						)
+						if (dependendRun && !dependendRun.success) {
+							skip = true
+						}
+					}
+					if (skip) {
+						// Skip feature if dependent fails
+						featureResults.push({
+							feature: {
+								...feature,
+								skip: true,
+							},
+							scenarioResults: [],
+							success: false,
+						})
+					} else {
+						featureResults.push(await this.runFeature(feature))
+					}
 				}),
 			Promise.resolve(),
 		)

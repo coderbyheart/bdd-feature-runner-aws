@@ -9,8 +9,14 @@ import * as jsonata from 'jsonata'
  */
 export const awsSdkStepRunners = <W>({
 	region,
+	constructorArgs,
 }: {
 	region: string
+	constructorArgs?: {
+		[key: string]: {
+			[key: string]: string
+		}
+	}
 }): StepRunner<W>[] => [
 	{
 		willRun: regexMatcher(
@@ -22,6 +28,7 @@ export const awsSdkStepRunners = <W>({
 				if (!step.interpolatedArgument) {
 					throw new Error('Must provide argument!')
 				}
+				await runner.progress('AWS-SDK', step.interpolatedArgument)
 				argument = JSON.parse(step.interpolatedArgument)
 			}
 			await runner.progress(
@@ -33,6 +40,7 @@ export const awsSdkStepRunners = <W>({
 			// @ts-ignore
 			const a = new AWS[api]({
 				region,
+				...(constructorArgs && constructorArgs[api]),
 			})
 			const res = await a[method](argument).promise()
 			runner.store.awsSdk = {
@@ -43,15 +51,15 @@ export const awsSdkStepRunners = <W>({
 	},
 	{
 		willRun: regexMatcher(
-			/^(?:"([^"]+)" of )?the execution result should (equal|match) this JSON$/,
+			/^(?:"([^"]+)" of )?(?:the execution result|"([^"]+)") should (equal|match) this JSON$/,
 		),
-		run: async ([exp, equalOrMatch], step, runner) => {
+		run: async ([exp, storeName, equalOrMatch], step, runner) => {
 			const { awsSdk } = runner.store
 			if (!step.interpolatedArgument) {
 				throw new Error('Must provide argument!')
 			}
 			const j = JSON.parse(step.interpolatedArgument)
-			const result = awsSdk.res
+			const result = storeName ? runner.store[storeName] : awsSdk.res
 			const fragment = exp ? jsonata(exp).evaluate(result) : result
 			if (equalOrMatch === 'match') {
 				expect(fragment).to.containSubset(j)
@@ -84,6 +92,30 @@ export const awsSdkStepRunners = <W>({
 			expect(result).to.not.be.an('undefined')
 			runner.store[storeName] = result
 			return result
+		},
+	},
+	{
+		willRun: regexMatcher(
+			/^I parse "([^"]+)" of the execution result into "([^"]+)"$/,
+		),
+		run: async ([expression, storeName], _, runner) => {
+			const e = jsonata(expression)
+			const { awsSdk } = runner.store
+			const result = e.evaluate(awsSdk.res)
+			expect(result).to.not.be.an('undefined')
+			runner.store[storeName] = JSON.parse(result)
+			return runner.store[storeName]
+		},
+	},
+	{
+		willRun: regexMatcher(/^I escape this JSON into "([^"]+)"$/),
+		run: async ([storeName], step, runner) => {
+			if (!step.interpolatedArgument) {
+				throw new Error('Must provide argument!')
+			}
+			const j = JSON.parse(step.interpolatedArgument)
+			runner.store[storeName] = JSON.stringify(JSON.stringify(j))
+			return runner.store[storeName]
 		},
 	},
 ]

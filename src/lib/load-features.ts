@@ -50,6 +50,7 @@ export type Cell = {
 
 export type SkippableFeature = Feature & {
 	skip: boolean
+	dependsOn?: Feature
 }
 
 export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
@@ -105,9 +106,17 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 		const skip =
 			tags.find(({ name }) => name === '@Skip') ||
 			(only.length && !only.includes(featureName))
+
+		const dependsOn = sortedFeatures.find(({ name }) => {
+			const hasDep = featureDependencies.find(
+				([, fname]) => fname === featureName,
+			)
+			return hasDep && hasDep[0] === name
+		})
 		return {
 			...f,
 			skip: !!skip,
+			dependsOn,
 		}
 	})
 }
