@@ -13,12 +13,17 @@ export const awsSdkStepRunners = <W>({
 	region: string
 }): StepRunner<W>[] => [
 	{
-		willRun: regexMatcher(/^I execute "([^"]+)" of the AWS ([^ ]+) SDK with$/),
-		run: async ([method, api], step, runner) => {
-			if (!step.interpolatedArgument) {
-				throw new Error('Must provide argument!')
+		willRun: regexMatcher(
+			/^I execute "([^"]+)" of the AWS ([^ ]+) SDK( with)$/,
+		),
+		run: async ([method, api, withArgs], step, runner) => {
+			let argument
+			if (withArgs) {
+				if (!step.interpolatedArgument) {
+					throw new Error('Must provide argument!')
+				}
+				argument = JSON.parse(step.interpolatedArgument)
 			}
-			const argument = JSON.parse(step.interpolatedArgument)
 			await runner.progress(
 				'AWS-SDK',
 				`${api}.${method}(${JSON.stringify(argument)})`,
