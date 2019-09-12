@@ -26,7 +26,9 @@ export const awsSdkStepRunners = <W>({
 			}
 			await runner.progress(
 				'AWS-SDK',
-				`${api}.${method}(${JSON.stringify(argument)})`,
+				`${api}.${method}(${
+					argument !== undefined ? JSON.stringify(argument) : ''
+				})`,
 			)
 			// @ts-ignore
 			const a = new AWS[api]({
