@@ -14,7 +14,7 @@ export const awsSdkStepRunners = <W>({
 }): StepRunner<W>[] => [
 	{
 		willRun: regexMatcher(
-			/^I execute "([^"]+)" of the AWS ([^ ]+) SDK( with)$/,
+			/^I execute "([^"]+)" of the AWS ([^ ]+) SDK( with)?$/,
 		),
 		run: async ([method, api, withArgs], step, runner) => {
 			let argument
