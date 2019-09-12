@@ -1,10 +1,14 @@
 import { CloudFormation } from 'aws-sdk'
 
-export const fetchStackConfiguration = async (
-	StackName: string,
-): Promise<{ [key: string]: string }> => {
+export const fetchStackConfiguration = async ({
+	StackName,
+	region,
+}: {
+	StackName: string
+	region: string
+}): Promise<{ [key: string]: string }> => {
 	const cf = new CloudFormation({
-		region: process.env.AWS_DEFAULT_REGION,
+		region,
 	})
 	const { Stacks } = await cf.describeStacks({ StackName }).promise()
 	if (!Stacks) {
