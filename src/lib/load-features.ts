@@ -51,7 +51,7 @@ export type Cell = {
 
 export type SkippableFeature = Feature & {
 	skip: boolean
-	dependsOn?: Feature
+	dependsOn: Feature[]
 }
 
 export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
@@ -70,24 +70,28 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 	// Sort the features by the step 'I am run after the "..." feature' using toposort
 	const featureDependencies = sortedByLast.map(feature => {
 		const bg = feature.children.find(({ type }) => type === 'Background')
-		if (bg) {
-			const afterStep = bg.steps.find(({ text }) => afterRx.test(text))
-			if (afterStep) {
-				const m = afterRx.exec(afterStep.text)
-				if (!m) {
-					throw new Error(`Failed to find feature in ${afterStep.text}`)
-				}
-				if (!featureNames.includes(m[1])) {
-					throw new Error(
-						`The feature ${m[1]} you want to run after does not exist!`,
-					)
-				}
-				return [m[1], feature.name]
-			}
+		if (!bg) {
+			return [[feature.name, false]]
 		}
-		return [feature.name, false]
+		return bg.steps
+			.filter(({ text }) => afterRx.test(text))
+			.reduce(
+				(deps, afterStep) => {
+					const m = afterRx.exec(afterStep.text)
+					if (!m) {
+						throw new Error(`Failed to find feature in ${afterStep.text}`)
+					}
+					if (!featureNames.includes(m[1])) {
+						throw new Error(
+							`The feature ${m[1]} you want to run after does not exist!`,
+						)
+					}
+					return [...deps, [m[1], feature.name]]
+				},
+				[] as string[][],
+			)
 	})
-	const sortedFeatureNames = toposort(featureDependencies).filter(
+	const sortedFeatureNames = toposort(featureDependencies.flat()).filter(
 		(feature?: any) => feature,
 	)
 
@@ -108,11 +112,12 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 			tags.find(({ name }) => name === '@Skip') ||
 			(only.length && !only.includes(featureName))
 
-		const dependsOn = sortedFeatures.find(({ name }) => {
-			const hasDep = featureDependencies.find(
-				([, fname]) => fname === featureName,
-			)
-			return hasDep && hasDep[0] === name
+		const dependsOn = sortedFeatures.filter(({ name }) => {
+			const depNames = featureDependencies
+				.flat()
+				.filter(([, fname]) => fname === featureName)
+				.map(([depName]) => depName)
+			return depNames.includes(name)
 		})
 		return {
 			...f,
