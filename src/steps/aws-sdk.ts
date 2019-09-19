@@ -40,23 +40,38 @@ export const awsSdkStepRunners = <W>({
 			let extraArgs = {} as any
 			const cognitoEnabled = flightRecorder.flags[cognito.cognitoAuthentication]
 			if (cognitoEnabled) {
+				const {
+					secretAccessKey,
+					identityId,
+					accessKeyId,
+					sessionToken,
+				} = flightRecorder.settings[
+					cognito.cognitoAuthentication
+				] as cognito.FlightRecorderSettings
 				extraArgs = {
-					credentials: flightRecorder.settings[cognito.cognitoAuthentication],
+					credentials: {
+						secretAccessKey,
+						identityId,
+						accessKeyId,
+						sessionToken,
+					},
 				}
-				await runner.progress('AWS-SDK.auth', extraArgs.credentials.identityId)
+				await runner.progress(
+					`AWS-SDK.${api}.auth`,
+					extraArgs.credentials.identityId,
+				)
 			}
-			await runner.progress(
-				'AWS-SDK',
-				`${api}.${method}(${
-					argument !== undefined ? JSON.stringify(argument) : ''
-				})`,
-			)
-			// @ts-ignore
-			const a = new AWS[api]({
+			const args = {
 				region,
 				...(constructorArgs && constructorArgs[api]),
 				...extraArgs,
-			})
+			}
+			// @ts-ignore
+			const a = new AWS[api](args)
+			await runner.progress(
+				`AWS-SDK.${api}`,
+				`${method}(${argument !== undefined ? JSON.stringify(argument) : ''})`,
+			)
 			const res = await a[method](argument).promise()
 			runner.store.awsSdk = {
 				res,
