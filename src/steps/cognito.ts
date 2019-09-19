@@ -14,6 +14,15 @@ export type CognitoStepRunnerStore = Store & {
 	region: string
 }
 
+export const cognitoAuthentication = 'cognitoAuthentication'
+export type FlightRecorderSettings = {
+	userId: string
+	accessKeyId: string
+	identityId: string
+	secretAccessKey: string
+	sessionToken: string
+}
+
 /**
  * BDD steps for authenticating against AWS Cognito
  */
@@ -37,7 +46,8 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
 			willRun: regexMatcher(
 				/^I am authenticated with Cognito(?: as "([^"]+)")?$/,
 			),
-			run: async ([userId], __, runner) => {
+			run: async ([userId], __, runner, { flags, settings }) => {
+				flags[cognitoAuthentication] = true
 				const prefix = userId ? `cognito:${userId}` : `cognito`
 				if (!runner.store[`${prefix}:IdentityId`]) {
 					const Username = userId ? `${userId}-${randSeq()}` : randSeq()
@@ -121,6 +131,13 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
 					runner.store[`${prefix}:AccessKeyId`] = Credentials!.AccessKeyId
 					runner.store[`${prefix}:SecretKey`] = Credentials!.SecretKey
 					runner.store[`${prefix}:SessionToken`] = Credentials!.SessionToken
+				}
+				settings[cognitoAuthentication] = {
+					userId: prefix,
+					accessKeyId: runner.store[`${prefix}:AccessKeyId`],
+					identityId: runner.store[`${prefix}:IdentityId`],
+					secretAccessKey: runner.store[`${prefix}:SecretKey`],
+					sessionToken: runner.store[`${prefix}:SessionToken`],
 				}
 				return [runner.store[`${prefix}:IdentityId`]]
 			},

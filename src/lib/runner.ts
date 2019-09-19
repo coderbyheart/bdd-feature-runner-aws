@@ -9,6 +9,11 @@ import { exponential } from 'backoff'
 
 const allSuccess = (r: boolean, result: Result) => (result.success ? r : false)
 
+export type FlightRecorder = {
+	flags: { [key: string]: boolean }
+	settings: { [key: string]: any }
+}
+
 export const afterRx = /^I am run after the "([^"]+)" feature$/
 
 export type Cleaner = <W extends Store>(
@@ -115,6 +120,10 @@ export class FeatureRunner<W> {
 		}
 		const startRun = Date.now()
 		const scenarioResults: ScenarioResult[] = []
+		const flightRecorder: FlightRecorder = {
+			flags: {},
+			settings: {},
+		} as const
 		await feature.children.reduce(
 			(promise, scenario) =>
 				promise.then(async () => {
@@ -161,18 +170,26 @@ export class FeatureRunner<W> {
 										})),
 									}
 									if (this.retry) {
-										scenarioResults.push(await this.retryScenario(s))
+										scenarioResults.push(
+											await this.retryScenario(s, flightRecorder),
+										)
 									} else {
-										scenarioResults.push(await this.runScenario(s))
+										scenarioResults.push(
+											await this.runScenario(s, flightRecorder),
+										)
 									}
 								}),
 							Promise.resolve(),
 						)
 					} else {
 						if (this.retry) {
-							scenarioResults.push(await this.retryScenario(scenario))
+							scenarioResults.push(
+								await this.retryScenario(scenario, flightRecorder),
+							)
 						} else {
-							scenarioResults.push(await this.runScenario(scenario))
+							scenarioResults.push(
+								await this.runScenario(scenario, flightRecorder),
+							)
 						}
 					}
 				}),
@@ -189,11 +206,14 @@ export class FeatureRunner<W> {
 	/**
 	 * Runs a scenario and retries it with a backoff
 	 */
-	async retryScenario(scenario: Scenario): Promise<ScenarioResult> {
+	async retryScenario(
+		scenario: Scenario,
+		feature: FlightRecorder,
+	): Promise<ScenarioResult> {
 		/* eslint no-async-promise-executor: off */
 		return new Promise<ScenarioResult>(async resolve => {
 			// Run the scenario without delay
-			let lastResult: ScenarioResult = await this.runScenario(scenario)
+			let lastResult: ScenarioResult = await this.runScenario(scenario, feature)
 			if (lastResult.success) {
 				return resolve(lastResult)
 			}
@@ -205,7 +225,7 @@ export class FeatureRunner<W> {
 			})
 			b.failAfter(5)
 			b.on('ready', async num => {
-				const r = await this.runScenario(scenario)
+				const r = await this.runScenario(scenario, feature)
 				lastResult = {
 					...r,
 					tries: num + 1,
@@ -224,7 +244,10 @@ export class FeatureRunner<W> {
 		})
 	}
 
-	async runScenario(scenario: Scenario): Promise<ScenarioResult> {
+	async runScenario(
+		scenario: Scenario,
+		feature: FlightRecorder,
+	): Promise<ScenarioResult> {
 		await this.progress('scenario', scenario.name)
 		const startRun = Date.now()
 		const stepResults: StepResult[] = []
@@ -243,7 +266,7 @@ export class FeatureRunner<W> {
 								},
 							})
 						} else {
-							stepResults.push(await this.runStep(step))
+							stepResults.push(await this.runStep(step, feature))
 						}
 					})
 					.catch(async error => {
@@ -272,7 +295,7 @@ export class FeatureRunner<W> {
 		}
 	}
 
-	async runStep(step: Step): Promise<StepResult> {
+	async runStep(step: Step, feature: FlightRecorder): Promise<StepResult> {
 		await this.progress('step', step.text)
 		const interpolatedStep = {
 			...step,
@@ -315,6 +338,7 @@ export class FeatureRunner<W> {
 			matchedRunner.args,
 			interpolatedStep,
 			this,
+			feature,
 		)
 
 		return {
@@ -396,6 +420,7 @@ export type StepRunnerFunc<W extends Store> = (
 	args: string[],
 	step: InterpolatedStep,
 	runner: FeatureRunner<W>,
+	feature: FlightRecorder,
 ) => Promise<any>
 
 export type InterpolatedStep = Step & {

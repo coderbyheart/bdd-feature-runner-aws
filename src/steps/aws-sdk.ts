@@ -3,6 +3,7 @@ import { StepRunner } from '../lib/runner'
 import { regexMatcher } from '../lib/regexMatcher'
 import { expect } from 'chai'
 import * as jsonata from 'jsonata'
+import * as cognito from './cognito'
 
 /**
  * BDD steps for using the AWS SDK directly
@@ -22,14 +23,27 @@ export const awsSdkStepRunners = <W>({
 		willRun: regexMatcher(
 			/^I execute "([^"]+)" of the AWS ([^ ]+) SDK( with)?$/,
 		),
-		run: async ([method, api, withArgs], step, runner) => {
+		run: async ([method, api, withArgs], step, runner, flightRecorder) => {
 			let argument
 			if (withArgs) {
 				if (!step.interpolatedArgument) {
 					throw new Error('Must provide argument!')
 				}
-				await runner.progress('AWS-SDK', step.interpolatedArgument)
-				argument = JSON.parse(step.interpolatedArgument)
+				try {
+					argument = JSON.parse(step.interpolatedArgument)
+				} catch {
+					throw new Error(
+						`Failed to parse argument: ${step.interpolatedArgument}`,
+					)
+				}
+			}
+			let extraArgs = {} as any
+			const cognitoEnabled = flightRecorder.flags[cognito.cognitoAuthentication]
+			if (cognitoEnabled) {
+				extraArgs = {
+					credentials: flightRecorder.settings[cognito.cognitoAuthentication],
+				}
+				await runner.progress('AWS-SDK.auth', extraArgs.credentials.identityId)
 			}
 			await runner.progress(
 				'AWS-SDK',
@@ -41,6 +55,7 @@ export const awsSdkStepRunners = <W>({
 			const a = new AWS[api]({
 				region,
 				...(constructorArgs && constructorArgs[api]),
+				...extraArgs,
 			})
 			const res = await a[method](argument).promise()
 			runner.store.awsSdk = {

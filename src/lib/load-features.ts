@@ -31,6 +31,7 @@ export type Feature = {
 	children: Scenario[]
 	tags: { type: 'Tag'; name: string }[]
 }
+
 export type Example = {
 	type: 'Example'
 	keyword: string
