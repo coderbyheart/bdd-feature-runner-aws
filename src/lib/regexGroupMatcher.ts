@@ -6,20 +6,20 @@ import {
 	StepRunnerFunc,
 } from './runner'
 
-export type RegExpStepRunner<W extends Store> = (
-	args: string[],
+export type RegExpGroupStepRunner<W extends Store> = (
+	args: { [key: string]: string },
 	step: InterpolatedStep,
 	runner: FeatureRunner<W>,
 	feature: FlightRecorder,
 ) => Promise<any>
 
-export const regexMatcher = <W extends Store>(rx: RegExp) => (
-	stepRunner: RegExpStepRunner<W>,
+export const regexGroupMatcher = <W extends Store>(rx: RegExp) => (
+	stepRunner: RegExpGroupStepRunner<W>,
 ) => (step: InterpolatedStep): false | StepRunnerFunc<W> => {
 	const m = rx.exec(step.interpolatedText)
-	if (!m) {
+	if (!m || m.groups === undefined) {
 		return false
 	}
 	return (runner: FeatureRunner<W>, feature: FlightRecorder) =>
-		stepRunner(m.slice(1), step, runner, feature)
+		stepRunner(m.groups as { [key: string]: string }, step, runner, feature)
 }

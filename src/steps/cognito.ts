@@ -42,11 +42,8 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
 		region,
 	})
 	return [
-		{
-			willRun: regexMatcher(
-				/^I am authenticated with Cognito(?: as "([^"]+)")?$/,
-			),
-			run: async ([userId], __, runner, { flags, settings }) => {
+		regexMatcher(/^I am authenticated with Cognito(?: as "([^"]+)")?$/)(
+			async ([userId], __, runner, { flags, settings }) => {
 				flags[cognitoAuthentication] = true
 				const prefix = userId ? `cognito:${userId}` : `cognito`
 				if (!runner.store[`${prefix}:IdentityId`]) {
@@ -141,6 +138,6 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
 				}
 				return [runner.store[`${prefix}:IdentityId`]]
 			},
-		},
+		),
 	]
 }

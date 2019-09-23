@@ -315,33 +315,26 @@ export class FeatureRunner<W> {
 			}
 		}
 
-		const matchedRunner: {
-			runner: StepRunner<W>
-			args: string[]
-		} = this.stepRunners.reduce((matchedRunner: any, runner) => {
-			if (matchedRunner) {
-				return matchedRunner
-			}
-			const args = runner.willRun(interpolatedStep)
-			if (args) {
-				return {
-					runner,
-					args,
+		const matchedRunner = this.stepRunners.reduce(
+			(matchedRunner, runner) => {
+				if (matchedRunner) {
+					return matchedRunner
 				}
-			}
-		}, undefined)
+				const r = runner(interpolatedStep)
+				if (r) {
+					return r
+				}
+				return undefined
+			},
+			undefined as (undefined | StepRunnerFunc<W>),
+		)
 
 		if (!matchedRunner) {
 			throw new StepRunnerNotDefinedError(interpolatedStep)
 		}
 		const startRun = Date.now()
 
-		const result = await matchedRunner.runner.run(
-			matchedRunner.args,
-			interpolatedStep,
-			this,
-			feature,
-		)
+		const result = await matchedRunner(this, feature)
 
 		return {
 			success: true,
@@ -407,20 +400,16 @@ export type Result = {
 	error?: Error
 }
 
-export type StepRunner<W extends Store> = {
-	/**
-	 * Determines whether this instance will run the step.
-	 *
-	 * If not returns false, otherwise the returned list will be passed as arguments to the run method
-	 */
-	willRun: (step: InterpolatedStep) => false | string[]
-
-	run: StepRunnerFunc<W>
-}
+/**
+ * Determines whether this instance will run the step.
+ *
+ * If not returns false, otherwise the returned list will be passed as arguments to the run method
+ */
+export type StepRunner<W extends Store> = (
+	step: InterpolatedStep,
+) => false | StepRunnerFunc<W>
 
 export type StepRunnerFunc<W extends Store> = (
-	args: string[],
-	step: InterpolatedStep,
 	runner: FeatureRunner<W>,
 	feature: FlightRecorder,
 ) => Promise<any>

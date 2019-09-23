@@ -1,5 +1,5 @@
-import { StepRunner, Store, FeatureRunner, StepRunnerFunc } from '../lib/runner'
-import { regexMatcher } from '../lib/regexMatcher'
+import { StepRunner, Store, FeatureRunner } from '../lib/runner'
+import { regexMatcher, RegExpStepRunner } from '../lib/regexMatcher'
 import * as chai from 'chai'
 import { expect } from 'chai'
 import * as jsonata from 'jsonata'
@@ -53,10 +53,7 @@ const getQuery = (store: Store, client: AppSyncClient, userId?: string) => {
 export const appSyncStepRunners = <
 	W extends AppSyncStepRunnerStore
 >(): StepRunner<W>[] => {
-	const s = (rx: RegExp, run: StepRunnerFunc<W>): StepRunner<W> => ({
-		willRun: regexMatcher(rx),
-		run,
-	})
+	const s = (rx: RegExp, run: RegExpStepRunner<W>) => regexMatcher(rx)(run)
 	return [
 		s(/^the GQL endpoint is "([^"]+)"$/, async ([endpoint], _, runner) => {
 			const { appSyncClient: client } = runner.store

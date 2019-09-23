@@ -1,5 +1,11 @@
 import * as jsonata from 'jsonata'
-import { StepRunner, StepRunnerFunc, Store } from '../lib/runner'
+import {
+	FeatureRunner,
+	FlightRecorder,
+	InterpolatedStep,
+	StepRunner,
+	Store,
+} from '../lib/runner'
 import { RestClient } from '../lib/rest-client'
 import { expect } from 'chai'
 import { regexMatcher } from '../lib/regexMatcher'
@@ -7,10 +13,15 @@ import { regexMatcher } from '../lib/regexMatcher'
 const client = new RestClient()
 
 export const restStepRunners = <W extends Store>(): StepRunner<W>[] => {
-	const s = (rx: RegExp, run: StepRunnerFunc<W>): StepRunner<W> => ({
-		willRun: regexMatcher(rx),
-		run,
-	})
+	const s = (
+		rx: RegExp,
+		run: (
+			args: string[],
+			step: InterpolatedStep,
+			runner: FeatureRunner<W>,
+			feature: FlightRecorder,
+		) => Promise<any>,
+	) => regexMatcher(rx)(run)
 	return [
 		s(/^the ([^ ]+) header is "([^"]+)"$/, async ([name, value]) => {
 			client.headers[name] = value

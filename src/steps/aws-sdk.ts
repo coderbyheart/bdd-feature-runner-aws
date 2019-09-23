@@ -19,11 +19,8 @@ export const awsSdkStepRunners = <W>({
 		}
 	}
 }): StepRunner<W>[] => [
-	{
-		willRun: regexMatcher(
-			/^I execute "([^"]+)" of the AWS ([^ ]+) SDK( with)?$/,
-		),
-		run: async ([method, api, withArgs], step, runner, flightRecorder) => {
+	regexMatcher(/^I execute "([^"]+)" of the AWS ([^ ]+) SDK( with)?$/)(
+		async ([method, api, withArgs], step, runner, flightRecorder) => {
 			let argument
 			if (withArgs) {
 				if (!step.interpolatedArgument) {
@@ -78,44 +75,36 @@ export const awsSdkStepRunners = <W>({
 			}
 			return res
 		},
-	},
-	{
-		willRun: regexMatcher(
-			/^(?:"([^"]+)" of )?(?:the execution result|"([^"]+)") should (equal|match) this JSON$/,
-		),
-		run: async ([exp, storeName, equalOrMatch], step, runner) => {
-			const { awsSdk } = runner.store
-			if (!step.interpolatedArgument) {
-				throw new Error('Must provide argument!')
-			}
-			const j = JSON.parse(step.interpolatedArgument)
-			const result = storeName ? runner.store[storeName] : awsSdk.res
-			const fragment = exp ? jsonata(exp).evaluate(result) : result
-			if (equalOrMatch === 'match') {
-				expect(fragment).to.containSubset(j)
-			} else {
-				expect(fragment).to.deep.equal(j)
-			}
-			return [fragment]
-		},
-	},
-	{
-		willRun: regexMatcher(
-			/^(?:"([^"]+)" of )?the execution result should equal ([0-9]+)$/,
-		),
-		run: async ([exp, num], _, runner) => {
-			const { awsSdk } = runner.store
-			const result = awsSdk.res
-			const fragment = exp ? jsonata(exp).evaluate(result) : result
-			expect(fragment).to.equal(parseInt(num, 10))
-			return [fragment]
-		},
-	},
-	{
-		willRun: regexMatcher(
-			/^I store "([^"]+)" of the execution result as "([^"]+)"$/,
-		),
-		run: async ([expression, storeName], _, runner) => {
+	),
+
+	regexMatcher(
+		/^(?:"([^"]+)" of )?(?:the execution result|"([^"]+)") should (equal|match) this JSON$/,
+	)(async ([exp, storeName, equalOrMatch], step, runner) => {
+		const { awsSdk } = runner.store
+		if (!step.interpolatedArgument) {
+			throw new Error('Must provide argument!')
+		}
+		const j = JSON.parse(step.interpolatedArgument)
+		const result = storeName ? runner.store[storeName] : awsSdk.res
+		const fragment = exp ? jsonata(exp).evaluate(result) : result
+		if (equalOrMatch === 'match') {
+			expect(fragment).to.containSubset(j)
+		} else {
+			expect(fragment).to.deep.equal(j)
+		}
+		return [fragment]
+	}),
+	regexMatcher(
+		/^(?:"([^"]+)" of )?the execution result should equal ([0-9]+)$/,
+	)(async ([exp, num], _, runner) => {
+		const { awsSdk } = runner.store
+		const result = awsSdk.res
+		const fragment = exp ? jsonata(exp).evaluate(result) : result
+		expect(fragment).to.equal(parseInt(num, 10))
+		return [fragment]
+	}),
+	regexMatcher(/^I store "([^"]+)" of the execution result as "([^"]+)"$/)(
+		async ([expression, storeName], _, runner) => {
 			const e = jsonata(expression)
 			const { awsSdk } = runner.store
 			const result = e.evaluate(awsSdk.res)
@@ -123,12 +112,9 @@ export const awsSdkStepRunners = <W>({
 			runner.store[storeName] = result
 			return result
 		},
-	},
-	{
-		willRun: regexMatcher(
-			/^I parse "([^"]+)" of the execution result into "([^"]+)"$/,
-		),
-		run: async ([expression, storeName], _, runner) => {
+	),
+	regexMatcher(/^I parse "([^"]+)" of the execution result into "([^"]+)"$/)(
+		async ([expression, storeName], _, runner) => {
 			const e = jsonata(expression)
 			const { awsSdk } = runner.store
 			const result = e.evaluate(awsSdk.res)
@@ -136,10 +122,9 @@ export const awsSdkStepRunners = <W>({
 			runner.store[storeName] = JSON.parse(result)
 			return runner.store[storeName]
 		},
-	},
-	{
-		willRun: regexMatcher(/^I escape this JSON into "([^"]+)"$/),
-		run: async ([storeName], step, runner) => {
+	),
+	regexMatcher(/^I escape this JSON into "([^"]+)"$/)(
+		async ([storeName], step, runner) => {
 			if (!step.interpolatedArgument) {
 				throw new Error('Must provide argument!')
 			}
@@ -147,5 +132,5 @@ export const awsSdkStepRunners = <W>({
 			runner.store[storeName] = JSON.stringify(JSON.stringify(j))
 			return runner.store[storeName]
 		},
-	},
+	),
 ]
