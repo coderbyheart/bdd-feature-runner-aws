@@ -94,6 +94,14 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 	const sortedFeatureNames = toposort(featureDependencies.flat()).filter(
 		(feature?: any) => feature,
 	)
+	const dependencies = (f: Feature): Feature[] =>
+		sortedFeatures.filter(({ name }) => {
+			const depNames = featureDependencies
+				.flat()
+				.filter(([, fname]) => fname === f.name)
+				.map(([depName]) => depName)
+			return depNames.includes(name)
+		})
 
 	// Now bring the features in the right order
 	const sortedFeatures: Feature[] = sortedFeatureNames.map(
@@ -102,27 +110,20 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 	)
 
 	// Find features to be skipped
-	const only = parsedFeatures
-		.filter(({ tags }) => tags.find(({ name }) => name === '@Only'))
-		.map(({ name }) => name)
+	const isOnly = (f: Feature) => f.tags.find(({ name }) => name === '@Only')
+	const only = parsedFeatures.filter(isOnly)
+	const onlyNames = only.map(({ name }) => name)
 
 	return sortedFeatures.map(f => {
 		const { tags, name: featureName } = f
 		const skip =
 			tags.find(({ name }) => name === '@Skip') ||
-			(only.length && !only.includes(featureName))
+			(onlyNames.length && !onlyNames.includes(featureName))
 
-		const dependsOn = sortedFeatures.filter(({ name }) => {
-			const depNames = featureDependencies
-				.flat()
-				.filter(([, fname]) => fname === featureName)
-				.map(([depName]) => depName)
-			return depNames.includes(name)
-		})
 		return {
 			...f,
 			skip: !!skip,
-			dependsOn,
+			dependsOn: dependencies(f),
 		}
 	})
 }
