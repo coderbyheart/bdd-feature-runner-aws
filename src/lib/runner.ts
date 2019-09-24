@@ -20,14 +20,14 @@ export type Cleaner = <W extends Store>(
 	runner: FeatureRunner<W>,
 ) => Promise<any>
 
-export class FeatureRunner<W> {
+export class FeatureRunner<W extends Store> {
 	private readonly featuresDir: string
 	private readonly reporters: Reporter[]
 	private readonly stepRunners: StepRunner<W>[] = []
 	private readonly cleaners: Cleaner[] = []
 	private readonly retry: boolean
 	public store: Store
-	public world: Store
+	public world: W
 
 	constructor(
 		world: W,
@@ -95,10 +95,11 @@ export class FeatureRunner<W> {
 				}),
 			Promise.resolve(),
 		)
-		const result = {
+		const result: RunResult = {
 			success: featureResults.reduce(allSuccess, true),
 			runTime: Date.now() - startRun,
 			featureResults,
+			store: this.store,
 		}
 		await Promise.all(this.reporters.map(reporter => reporter.report(result)))
 		await this.cleaners.reduce(
@@ -392,6 +393,7 @@ export type FeatureResult = Result & {
 
 export type RunResult = Result & {
 	featureResults: FeatureResult[]
+	store: Store
 }
 
 export type Result = {

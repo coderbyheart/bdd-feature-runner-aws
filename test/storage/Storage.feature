@@ -1,4 +1,4 @@
-Feature: Simple storage
+Feature: Testing stored data
 
   Scenario: Match a stored value against a string
 

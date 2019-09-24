@@ -6,7 +6,3 @@ Feature: Escaping JSON
        """
        {"baz":"foo","num":42,"b":true}
        """
-    Then "escapedJSON" should equal this JSON
-       """
-       \\"{\\"baz\\":\\"foo\\",\\"num\\":42,\\"b\\":true}\\"
-       """

@@ -1,25 +1,44 @@
 import * as jsonata from 'jsonata'
+import * as chai from 'chai'
 import { expect } from 'chai'
 import { regexGroupMatcher } from '../lib/regexGroupMatcher'
-import { StepRunner } from '../lib/runner'
+import * as chaiSubset from 'chai-subset'
 
-export const storageStepRunners = (): StepRunner<any>[] => [
+chai.use(chaiSubset)
+
+export const storageStepRunners = () => [
 	regexGroupMatcher(
-		/^(?:"(?<exp>[^"]+)" of )?"(?<storeName>[^"]+)" should (?<equalOrMatch>equal|match) this JSON$/,
-	)(async ({ exp, equalOrMatch, storeName }, step, runner) => {
-		if (!step.interpolatedArgument) {
-			throw new Error('Must provide argument!')
-		}
-		const j = JSON.parse(step.interpolatedArgument)
-		const result = runner.store[storeName]
-		const fragment = exp ? jsonata(exp).evaluate(result) : result
-		if (equalOrMatch === 'match') {
-			expect(fragment).to.containSubset(j)
-		} else {
-			expect(fragment).to.deep.equal(j)
-		}
-		return [fragment]
-	}),
+		/^"(?<exp>[^"]+)" should (?<equalOrMatch>(?:equal|be)|match) (?:(?<jsonMatch>this JSON)|"(?<stringMatch>[^"]+)"|(?<numMatch>[0-9]+)|(?<boolMatch>true|false))$/,
+	)(
+		async (
+			{ exp, equalOrMatch, jsonMatch, stringMatch, numMatch, boolMatch },
+			step,
+			runner,
+		) => {
+			let expected
+
+			if (jsonMatch) {
+				if (!step.interpolatedArgument) {
+					throw new Error('Must provide argument!')
+				}
+				expected = JSON.parse(step.interpolatedArgument)
+			} else if (stringMatch) {
+				expected = stringMatch
+			} else if (numMatch) {
+				expected = parseInt(numMatch, 10)
+			} else if (boolMatch) {
+				expected = boolMatch === 'true'
+			}
+
+			const fragment = jsonata(exp).evaluate(runner.store)
+			if (equalOrMatch === 'match') {
+				expect(fragment).to.containSubset(expected)
+			} else {
+				expect(fragment).to.deep.equal(expected)
+			}
+			return [fragment]
+		},
+	),
 	regexGroupMatcher(/^I escape this JSON into "(?<storeName>[^"]+)"$/)(
 		async ({ storeName }, step, runner) => {
 			if (!step.interpolatedArgument) {

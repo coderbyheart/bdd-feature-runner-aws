@@ -1,5 +1,4 @@
 import * as AWS from 'aws-sdk'
-import { StepRunner } from '../lib/runner'
 import { regexMatcher } from '../lib/regexMatcher'
 import { expect } from 'chai'
 import * as jsonata from 'jsonata'
@@ -8,7 +7,7 @@ import * as cognito from './cognito'
 /**
  * BDD steps for using the AWS SDK directly
  */
-export const awsSdkStepRunners = <W>({
+export const awsSdkStepRunners = ({
 	region,
 	constructorArgs,
 }: {
@@ -18,7 +17,7 @@ export const awsSdkStepRunners = <W>({
 			[key: string]: string
 		}
 	}
-}): StepRunner<W>[] => [
+}) => [
 	regexMatcher(/^I execute "([^"]+)" of the AWS ([^ ]+) SDK( with)?$/)(
 		async ([method, api, withArgs], step, runner, flightRecorder) => {
 			let argument

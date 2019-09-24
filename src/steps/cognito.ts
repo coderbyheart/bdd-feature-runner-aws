@@ -1,4 +1,4 @@
-import { StepRunner, Store } from '../lib/runner'
+import { Store } from '../lib/runner'
 import { regexMatcher } from '../lib/regexMatcher'
 import { CognitoIdentity, CognitoIdentityServiceProvider } from 'aws-sdk'
 
@@ -7,7 +7,7 @@ const randSeq = () =>
 		.toString(36)
 		.replace(/[^a-z]+/g, '')
 
-export type CognitoStepRunnerStore = Store & {
+export type CognitoStepRunnerWorld = Store & {
 	userPoolId: string
 	identityPoolId: string
 	userPoolClientId: string
@@ -26,7 +26,7 @@ export type FlightRecorderSettings = {
 /**
  * BDD steps for authenticating against AWS Cognito
  */
-export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
+export const cognitoStepRunners = <W extends CognitoStepRunnerWorld>({
 	region,
 	developerProviderName,
 	emailAsUsername,
@@ -34,7 +34,7 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
 	developerProviderName: string
 	region: string
 	emailAsUsername?: boolean
-}): StepRunner<W>[] => {
+}) => {
 	const ci = new CognitoIdentity({
 		region,
 	})
@@ -42,7 +42,7 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerStore>({
 		region,
 	})
 	return [
-		regexMatcher(/^I am authenticated with Cognito(?: as "([^"]+)")?$/)(
+		regexMatcher<W>(/^I am authenticated with Cognito(?: as "([^"]+)")?$/)(
 			async ([userId], __, runner, { flags, settings }) => {
 				flags[cognitoAuthentication] = true
 				const prefix = userId ? `cognito:${userId}` : `cognito`
