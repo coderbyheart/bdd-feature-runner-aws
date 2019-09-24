@@ -5,7 +5,7 @@ import { StepRunner } from '../lib/runner'
 
 export const storageStepRunners = (): StepRunner<any>[] => [
 	regexGroupMatcher(
-		/^(?:"(?<exp>[^"]+)" of )?"(?<storeName>[^"]+)" (?<equalOrMatch>equal|match) this JSON$/,
+		/^(?:"(?<exp>[^"]+)" of )?"(?<storeName>[^"]+)" should (?<equalOrMatch>equal|match) this JSON$/,
 	)(async ({ exp, equalOrMatch, storeName }, step, runner) => {
 		if (!step.interpolatedArgument) {
 			throw new Error('Must provide argument!')
