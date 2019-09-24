@@ -110,25 +110,6 @@ export const restStepRunners = <W extends Store>(): StepRunner<W>[] => {
 			},
 		),
 		s(
-			/^a page with ([0-9]+)(?: of ([0-9]+))? items? is returned$/,
-			async ([num, total]) => {
-				expect(client.response.body).to.have.property('items')
-				expect(client.response.body).to.have.property('total')
-				if (total) {
-					expect(client.response.body.total).to.equal(+total)
-				} else {
-					expect(client.response.body.total).to.be.at.least(+num)
-				}
-				expect(client.response.body.items).to.have.length(+num)
-				return client.response.body
-			},
-		),
-		s(/^a page is returned$/, async () => {
-			expect(client.response.body).to.have.property('items')
-			expect(client.response.body).to.have.property('total')
-			return client.response.body
-		}),
-		s(
 			/^I store "([^"]+)" of the response body as "([^"]+)"(?: encoded with (encodeURIComponent))?$/,
 			async ([expression, storeName, encoder], _, runner) => {
 				const e = jsonata(expression)
