@@ -111,14 +111,4 @@ export const awsSdkStepRunners = ({
 			return result
 		},
 	),
-	regexMatcher(/^I parse "([^"]+)" of the execution result into "([^"]+)"$/)(
-		async ([expression, storeName], _, runner) => {
-			const e = jsonata(expression)
-			const { awsSdk } = runner.store
-			const result = e.evaluate(awsSdk.res)
-			expect(result).to.not.be.an('undefined')
-			runner.store[storeName] = JSON.parse(result)
-			return runner.store[storeName]
-		},
-	),
 ]
