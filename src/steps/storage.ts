@@ -20,4 +20,14 @@ export const storageStepRunners = (): StepRunner<any>[] => [
 		}
 		return [fragment]
 	}),
+	regexGroupMatcher(/^I escape this JSON into "(?<storeName>[^"]+)"$/)(
+		async ({ storeName }, step, runner) => {
+			if (!step.interpolatedArgument) {
+				throw new Error('Must provide argument!')
+			}
+			const j = JSON.parse(step.interpolatedArgument)
+			runner.store[storeName] = JSON.stringify(JSON.stringify(j))
+			return runner.store[storeName]
+		},
+	),
 ]
