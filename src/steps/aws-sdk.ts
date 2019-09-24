@@ -1,7 +1,5 @@
 import * as AWS from 'aws-sdk'
 import { regexMatcher } from '../lib/regexMatcher'
-import { expect } from 'chai'
-import * as jsonata from 'jsonata'
 import * as cognito from './cognito'
 
 /**
@@ -73,16 +71,6 @@ export const awsSdkStepRunners = ({
 				res,
 			}
 			return res
-		},
-	),
-	regexMatcher(/^I store "([^"]+)" of the execution result as "([^"]+)"$/)(
-		async ([expression, storeName], _, runner) => {
-			const e = jsonata(expression)
-			const { awsSdk } = runner.store
-			const result = e.evaluate(awsSdk.res)
-			expect(result).to.not.be.an('undefined')
-			runner.store[storeName] = result
-			return result
 		},
 	),
 ]

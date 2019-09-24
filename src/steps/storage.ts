@@ -58,4 +58,13 @@ export const storageStepRunners = () => [
 			return runner.store[storeName]
 		},
 	),
+	regexGroupMatcher(/^I store "(?<exp>[^"]+)" into "(?<storeName>[^"]+)"$/)(
+		async ({ exp, storeName }, _, runner) => {
+			const e = jsonata(exp)
+			const result = e.evaluate(runner.store)
+			expect(result).to.not.be.an('undefined')
+			runner.store[storeName] = result
+			return result
+		},
+	),
 ]
