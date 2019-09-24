@@ -75,32 +75,6 @@ export const awsSdkStepRunners = ({
 			return res
 		},
 	),
-	regexMatcher(
-		/^(?:"([^"]+)" of )?the execution result should (equal|match) this JSON$/,
-	)(async ([exp, equalOrMatch], step, runner) => {
-		const { awsSdk } = runner.store
-		if (!step.interpolatedArgument) {
-			throw new Error('Must provide argument!')
-		}
-		const j = JSON.parse(step.interpolatedArgument)
-		const result = awsSdk.res
-		const fragment = exp ? jsonata(exp).evaluate(result) : result
-		if (equalOrMatch === 'match') {
-			expect(fragment).to.containSubset(j)
-		} else {
-			expect(fragment).to.deep.equal(j)
-		}
-		return [fragment]
-	}),
-	regexMatcher(
-		/^(?:"([^"]+)" of )?the execution result should equal ([0-9]+)$/,
-	)(async ([exp, num], _, runner) => {
-		const { awsSdk } = runner.store
-		const result = awsSdk.res
-		const fragment = exp ? jsonata(exp).evaluate(result) : result
-		expect(fragment).to.equal(parseInt(num, 10))
-		return [fragment]
-	}),
 	regexMatcher(/^I store "([^"]+)" of the execution result as "([^"]+)"$/)(
 		async ([expression, storeName], _, runner) => {
 			const e = jsonata(expression)
