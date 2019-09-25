@@ -1,6 +1,5 @@
 # BDD Feature Runner for AWS
 
-[![npm version](https://img.shields.io/npm/v/@coderbyheart/bdd-feature-runner-aws.svg)](https://www.npmjs.com/package/@coderbyheart/bdd-feature-runner-aws)
 [![GitHub Actions](https://github.com/coderbyheart/bdd-feature-runner-aws/workflows/Test%20and%20Release/badge.svg)](https://github.com/coderbyheart/bdd-feature-runner-aws/actions)
 [![Greenkeeper badge](https://badges.greenkeeper.io/coderbyheart/bdd-feature-runner-aws.svg)](https://greenkeeper.io/)
 
@@ -9,6 +8,13 @@ runner for cloud native applications made with AWS.
 
 Example usage:
 [bdd-feature-runner-aws-example](https://github.com/coderbyheart/bdd-feature-runner-aws-example).
+
+## Installation
+
+    # This package is hosted on the GitHub package registry
+    # See https://help.github.com/en/articles/configuring-npm-for-use-with-github-package-registry#installing-a-package
+    echo "@coderbyheart:registry=https://npm.pkg.github.com" >> .npmrc
+    npm i --save-dev @coderbyheart/bdd-feature-runner-aws
 
 ## Special annotations
 
