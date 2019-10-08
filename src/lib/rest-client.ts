@@ -1,6 +1,7 @@
 import * as querystring from 'querystring'
+import * as fetchPonyfill from 'fetch-ponyfill'
 
-const { fetch } = require('fetch-ponyfill')()
+const { fetch } = fetchPonyfill()
 
 const toQueryString = (obj: any): string => {
 	if (!Object.keys(obj).length) {

@@ -6,9 +6,9 @@ import {
 	StepResult,
 	StepRunnerNotDefinedError,
 } from './runner'
-
-const chalk = require('chalk')
+import chalk from 'chalk'
 import * as Chai from 'chai'
+import { messages as cucumber } from 'cucumber-messages'
 
 type Config = { printResults: boolean; printProgress: boolean }
 
@@ -63,11 +63,11 @@ const reportFeature = (result: FeatureResult) => {
 	if (result.feature.skip) {
 		i.push(
 			'',
-			chalk.yellow.strikethrough.dim(result.feature.name),
+			chalk.yellow.strikethrough.dim(`${result.feature.name}`),
 			chalk.magenta('↷ (skipped)'),
 		)
 	} else {
-		console.log('', chalk.yellow.bold(result.feature.name))
+		console.log('', chalk.yellow.bold(`${result.feature.name}`))
 		console.log('')
 
 		i.push(result.success ? chalk.green(' 💯') : chalk.red.bold(' ❌'))
@@ -75,15 +75,17 @@ const reportFeature = (result: FeatureResult) => {
 			i.push(chalk.blue(`⏱ ${result.runTime}ms`))
 		}
 	}
-	if (result.feature.tags.length) {
-		i.push(chalk.blueBright(result.feature.tags.map(({ name }) => name)))
+	if (result.feature.tags?.length) {
+		i.push(result.feature.tags.map(({ name }) => chalk.blueBright(`${name}`)))
 	}
 	console.log(...i)
 }
 
 const reportScenario = (result: ScenarioResult) => {
 	console.log('')
-	const i = [chalk.gray(result.scenario.type)]
+	const type = result.scenario instanceof cucumber.GherkinDocument.Feature.Background ?
+		'Background': 'Scenario'
+	const i = [chalk.gray(type)]
 	if (result.skipped) {
 		i.push(chalk.magenta(' ↷ '), chalk.magenta('(skipped)'))
 		if (result.scenario.name) {

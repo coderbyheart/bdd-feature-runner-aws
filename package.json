@@ -38,7 +38,7 @@
     "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
     "fetch-ponyfill": "^6.1.0",
-    "gherkin": "^5.1.0",
+    "gherkin": "^8.0.0",
     "glob": "^7.1.4",
     "graphql": "^14.5.8",
     "jsonata": "^1.7.0",
@@ -56,10 +56,12 @@
     "@types/jest": "^24.0.18",
     "@types/node": "^12.7.12",
     "@types/paho-mqtt": "^1.0.4",
+    "@types/toposort": "^2.0.3",
     "@types/ws": "^6.0.3",
     "husky": "^3.0.8",
     "jest": "^24.9.0",
-    "ts-jest": "^24.1.0"
+    "ts-jest": "^24.1.0",
+    "typescript": "^3.7.0-beta"
   },
   "files": [
     "package-lock.json",
@@ -85,11 +87,6 @@
     }
   },
   "lint-staged": {
-    "*.ts": [
-      "prettier --write",
-      "eslint --ext .js,.ts",
-      "git add"
-    ],
     "*.{md,json,yaml,yml,js}": [
       "prettier --write",
       "git add"
