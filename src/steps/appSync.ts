@@ -7,8 +7,7 @@ import { AppSyncClient } from '../lib/appsync/appSyncClient'
 import { queryWithIAM } from '../lib/appsync/queryWithIAM'
 import { subscribe } from '../lib/appsync/subscribe'
 import { queryWithApiKey } from '../lib/appsync/queryWithApiKey'
-
-const chaiSubset = require('chai-subset')
+import * as chaiSubset from 'chai-subset'
 
 chai.use(chaiSubset)
 

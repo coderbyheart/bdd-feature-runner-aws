@@ -12,7 +12,7 @@ Example usage:
 
 ## Installation
 
-> Note: This package is hosted on the GitHub package registry and 
+> Note: This package is hosted on the GitHub package registry and
 > [npm needs to be configured](https://help.github.com/en/articles/configuring-npm-for-use-with-github-package-registry#installing-a-package)
 > in order to use it.
 
@@ -24,3 +24,13 @@ Example usage:
 - `@Skip`: Do not run this feature
 - `@Only`: Run only this feature
 - `@Last`: Run this feature after all others
+
+## Note on TypeScript 3.7 Beta
+
+This project makes use of TypeScript 3.7 features, therefore typescript-eslint
+is currently disabled
+[until it supports them](https://github.com/typescript-eslint/typescript-eslint/issues/1033).
+
+Also once
+[this fix has been published](https://github.com/microsoft/TypeScript/issues/33744)
+replace `(example?.tableBody ?? []).filter` with `example?.tableBody?.filter`.
