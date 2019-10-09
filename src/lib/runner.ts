@@ -186,14 +186,15 @@ export class FeatureRunner<W extends Store> {
 							)
 						}
 					} else {
-						if (scenario.scenario) {
+						const s = scenario.scenario || scenario.background
+						if (s) {
 							if (this.retry) {
 								scenarioResults.push(
-									await this.retryScenario(scenario.scenario, flightRecorder),
+									await this.retryScenario(s, flightRecorder),
 								)
 							} else {
 								scenarioResults.push(
-									await this.runScenario(scenario.scenario, flightRecorder),
+									await this.runScenario(s, flightRecorder),
 								)
 							}
 						}
@@ -251,10 +252,10 @@ export class FeatureRunner<W extends Store> {
 	}
 
 	async runScenario(
-		scenario: cucumber.GherkinDocument.Feature.IScenario,
+		scenario: cucumber.GherkinDocument.Feature.IScenario |  cucumber.GherkinDocument.Feature.IBackground,
 		feature: FlightRecorder,
 	): Promise<ScenarioResult> {
-		await this.progress('scenario', `${scenario.name}`)
+		await this.progress(scenario instanceof cucumber.GherkinDocument.Feature.Background ? 'background': 'scenario', `${scenario.name}`)
 		const startRun = Date.now()
 		const stepResults: StepResult[] = []
 		let abort = false
