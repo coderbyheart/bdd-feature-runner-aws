@@ -1,10 +1,8 @@
-import {
-	fromDirectory,
-	SkippableFeature,
-} from './load-features'
-import { ConsoleReporter } from './console-reporter'
-import { exponential } from 'backoff'
-import { messages as cucumber } from 'cucumber-messages'
+import { fromDirectory, SkippableFeature } from './load-features';
+import { ConsoleReporter } from './console-reporter';
+import { exponential } from 'backoff';
+import { messages as cucumber } from 'cucumber-messages';
+import { replaceStoragePlaceholders } from './replaceStoragePlaceholders';
 
 const allSuccess = (r: boolean, result: Result) => (result.success ? r : false)
 
@@ -304,11 +302,15 @@ export class FeatureRunner<W extends Store> {
 
 	async runStep(step: cucumber.GherkinDocument.Feature.IStep, feature: FlightRecorder): Promise<StepResult> {
 		await this.progress('step', `${step.text}`)
+		const r = replaceStoragePlaceholders({
+			...this.world,
+			...this.store,
+		})
 		const interpolatedStep = {
 			...step,
-			interpolatedText: this.replaceStoragePlaceholders(`${step.text}`),
+			interpolatedText: r(`${step.text}`),
 			interpolatedArgument: step.docString
-				? this.replaceStoragePlaceholders(`${step.docString.content}`)
+				? r(`${step.docString.content}`)
 				: undefined,
 		}
 
@@ -348,25 +350,6 @@ export class FeatureRunner<W extends Store> {
 			result,
 			skipped: false,
 		}
-	}
-
-	/**
-	 * Replace {foo} storage placeholders
-	 */
-	private replaceStoragePlaceholders(text: string): string {
-		const data = {
-			...this.world,
-			...this.store,
-		}
-		const interpolated = Object.keys(data).reduce(
-			(str, key) => str.replace(new RegExp(`{${key}}`, 'g'), data[key]),
-			text,
-		)
-		const missed = interpolated.match(/\{[^}\W]+\}/g)
-		if (missed && missed.length) {
-			throw new StoreKeyUndefinedError(missed.map(k => k.slice(1, -1)), data)
-		}
-		return interpolated
 	}
 }
 

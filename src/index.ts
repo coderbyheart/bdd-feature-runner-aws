@@ -16,3 +16,4 @@ export * from './steps/appSync'
 export * from './steps/cognito'
 export * from './steps/aws-sdk'
 export * from './steps/storage'
+export { replaceStoragePlaceholders } from './lib/replaceStoragePlaceholders';
