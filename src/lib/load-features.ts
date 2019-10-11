@@ -37,15 +37,14 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 
 	// Sort the features by the step 'I am run after the "..." feature' using toposort
 	const featureDependencies = sortedByLast.map(feature => {
-		const bg = (feature?.children ?? []).find(({ background }) => background)
-		if (!bg) {
-			return [[feature.name, undefined]]
-		}
+		const bgSteps = (feature?.children ?? [])
+			.filter(({ background }) => background)
+			.map(bg => (bg.background?.steps || [])
+				.filter(({ text }) => text && afterRx.test(text)))
+			.flat()
 
-		return (bg.background?.steps || [])
-			.filter(({ text }) => text && afterRx.test(text))
-			.reduce(
-				(deps, afterStep) => {
+		const runAfter = bgSteps.map(
+				afterStep => {
 					const m = afterStep.text && afterRx.exec(afterStep.text)
 					if (!m) {
 						throw new Error(`Failed to find feature in ${afterStep.text}`)
@@ -55,13 +54,15 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 							`The feature ${m[1]} you want to run after does not exist!`,
 						)
 					}
-					return [...deps, [m[1], feature.name]] as [
-						string,
-						string | undefined,
-					][]
-				},
-				[] as [string, string | undefined][],
+					return m[1]
+				}
 			)
+
+			if (runAfter.length) {
+				return runAfter.map(dep => [dep, feature.name])
+			}
+
+			return [[feature.name, undefined]]
 	})
 
 	const sortedFeatureNames = toposort(featureDependencies.flat() as [

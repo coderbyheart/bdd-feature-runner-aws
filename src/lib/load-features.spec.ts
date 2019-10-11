@@ -28,6 +28,13 @@ describe('load-features', () => {
 			expect(deps).toContain('First')
 			expect(deps).toContain('Second')
 		})
+
+		it('should run a single feature with background but no dependency', async () => {
+			const features = await fromDirectory(
+				path.join(process.cwd(), 'test', 'single-feature-with-bg'),
+			)
+			expect(features).toHaveLength(1)
+		})
 	})
 
 	describe('@Last', () => {
