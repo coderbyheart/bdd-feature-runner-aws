@@ -1,7 +1,6 @@
 import { SQS } from 'aws-sdk'
 import { FeatureRunner } from './runner'
 
-const sqs = new SQS()
 type WebhookRequest = {
 	headers: { [key: string]: string }
 	body: object
@@ -12,10 +11,12 @@ type WebhookRequest = {
  */
 export class WebhookReceiver {
 	private readonly queueUrl: string
+	private readonly sqs: SQS
 	latestWebhookRequest?: WebhookRequest
 
-	constructor(queueUrl: string) {
+	constructor(queueUrl: string, region: string) {
 		this.queueUrl = queueUrl
+		this.sqs = new SQS({region})
 	}
 
 	/**
@@ -31,7 +32,7 @@ export class WebhookReceiver {
 		MessageGroupId: string,
 		runner: FeatureRunner<any>,
 	): Promise<WebhookRequest> {
-		const { Messages } = await sqs
+		const { Messages } = await this.sqs
 			.receiveMessage({
 				QueueUrl: this.queueUrl,
 				MaxNumberOfMessages: 1,
@@ -44,7 +45,7 @@ export class WebhookReceiver {
 			throw new Error('No webhook request received!')
 		}
 		const { Body, MessageAttributes, ReceiptHandle, Attributes } = Messages[0]
-		await sqs
+		await this.sqs
 			.deleteMessage({
 				QueueUrl: this.queueUrl,
 				ReceiptHandle: ReceiptHandle as string,
@@ -78,7 +79,7 @@ export class WebhookReceiver {
 	 * Deletes all messages in a Queue instead of using purge (which can only be used every 60 seconds)
 	 */
 	async clearQueue() {
-		const { Messages } = await sqs
+		const { Messages } = await this.sqs
 			.receiveMessage({
 				QueueUrl: this.queueUrl,
 				MaxNumberOfMessages: 10,
@@ -88,7 +89,7 @@ export class WebhookReceiver {
 		if (Messages !== undefined) {
 			await Promise.all(
 				Messages.map(async ({ ReceiptHandle }) =>
-					sqs
+					this.sqs
 						.deleteMessage({
 							QueueUrl: this.queueUrl,
 							ReceiptHandle: ReceiptHandle as string,

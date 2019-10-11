@@ -10,7 +10,7 @@ type WebhookStepRunnersWorld = Store & {
 	webhookQueue: string
 }
 
-export const webhookStepRunners = <W extends WebhookStepRunnersWorld>() => [
+export const webhookStepRunners = <W extends WebhookStepRunnersWorld>({ region }: { region: string }) => [
 	regexMatcher<W>(/^the Webhook Receiver "([^"]+)" should be called$/)(
 		async ([MessageGroupId], _, runner) =>
 			r.receiveWebhookRequest(MessageGroupId, runner).then(r => r.body),
@@ -39,7 +39,7 @@ export const webhookStepRunners = <W extends WebhookStepRunnersWorld>() => [
 		},
 	),
 	regexMatcher<W>(/^I have a Webhook Receiver/)(async (_, __, runner) => {
-		r = new WebhookReceiver(runner.world.webhookQueue)
+		r = new WebhookReceiver(runner.world.webhookQueue, region)
 		await r.clearQueue()
 	}),
 ]
