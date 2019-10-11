@@ -56,4 +56,8 @@ describe('load-features', () => {
 			).toEqual(['Only'])
 		})
 	})
+
+	it.only('should fail if no feature are found in the directory', () => {
+		expect(fromDirectory(path.join(process.cwd(), 'test', 'foo'),)).rejects.toThrowError(/^No features found in directory .+foo$/)
+	})
 })

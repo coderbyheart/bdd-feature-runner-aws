@@ -114,5 +114,9 @@ export const fromDirectory = async (
 ): Promise<SkippableFeature[]> => {
 	const scan = path.join(path.resolve(dir), '*.feature')
 	const featureFiles = await glob(scan)
-	return parseFeatures(featureFiles.map(f => readFileSync(f)))
+	const features = parseFeatures(featureFiles.map(f => readFileSync(f)))
+	if (!features.length) {
+		throw new Error(`No features found in directory ${dir}`)
+	}
+	return features
 }
