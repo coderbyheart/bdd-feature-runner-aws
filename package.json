@@ -37,6 +37,7 @@
     "backoff": "^2.5.0",
     "chai": "^4.2.0",
     "chai-subset": "^1.6.0",
+    "chalk": "^3.0.0",
     "fetch-ponyfill": "^6.1.0",
     "gherkin": "^8.1.1",
     "glob": "^7.1.5",

@@ -6,7 +6,7 @@ import {
 	StepResult,
 	StepRunnerNotDefinedError,
 } from './runner'
-import chalk from 'chalk'
+import * as chalk from 'chalk'
 import * as Chai from 'chai'
 import { messages as cucumber } from 'cucumber-messages'
 
