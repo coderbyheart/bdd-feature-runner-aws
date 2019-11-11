@@ -75,7 +75,7 @@ const reportFeature = (result: FeatureResult) => {
 			i.push(chalk.blue(`⏱ ${result.runTime}ms`))
 		}
 	}
-	if (result.feature.tags?.length) {
+	if (result.feature.tags ?.length) {
 		i.push(result.feature.tags.map(({ name }) => chalk.blueBright(`${name}`)))
 	}
 	console.log(...i)
@@ -84,7 +84,7 @@ const reportFeature = (result: FeatureResult) => {
 const reportScenario = (result: ScenarioResult) => {
 	console.log('')
 	const type = result.scenario instanceof cucumber.GherkinDocument.Feature.Background ?
-		'Background': 'Scenario'
+		'Background' : 'Scenario'
 	const i = [chalk.gray(type)]
 	if (result.skipped) {
 		i.push(chalk.magenta(' ↷ '), chalk.magenta('(skipped)'))
