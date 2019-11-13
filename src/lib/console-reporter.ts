@@ -10,7 +10,7 @@ import * as chalk from 'chalk'
 import * as Chai from 'chai'
 import { messages as cucumber } from 'cucumber-messages'
 
-type Config = { printResults: boolean; printProgress: boolean, printProgressTimestamps: boolean }
+type Config = { printResults: boolean; printProgress: boolean, printProgressTimestamps?: boolean }
 
 export class ConsoleReporter implements Reporter {
 	private readonly config: Config
