@@ -10,13 +10,13 @@ import * as chalk from 'chalk'
 import * as Chai from 'chai'
 import { messages as cucumber } from 'cucumber-messages'
 
-type Config = { printResults: boolean; printProgress: boolean }
+type Config = { printResults: boolean; printProgress: boolean, printProgressTimestamps: boolean }
 
 export class ConsoleReporter implements Reporter {
 	private readonly config: Config
 	private lastProgress?: number
 
-	constructor(config: Config = { printResults: false, printProgress: false }) {
+	constructor(config: Config = { printResults: false, printProgress: false, printProgressTimestamps: false }) {
 		this.config = config
 	}
 
@@ -44,7 +44,12 @@ export class ConsoleReporter implements Reporter {
 		if (!this.config.printProgress) {
 			return
 		}
-		const i = [' ', chalk.magenta(' ℹ '), chalk.cyan(type)]
+		const i = [' ']
+		if (this.config.printProgressTimestamps) {
+			i.push(chalk.grey(`[${new Date().toISOString()}]`))
+		}
+		i.push(chalk.magenta(' ℹ '),
+			chalk.cyan(type))
 		if (info) {
 			i.push(chalk.grey(info))
 		}
@@ -75,7 +80,7 @@ const reportFeature = (result: FeatureResult) => {
 			i.push(chalk.blue(`⏱ ${result.runTime}ms`))
 		}
 	}
-	if (result.feature.tags ?.length) {
+	if (result.feature.tags?.length) {
 		i.push(result.feature.tags.map(({ name }) => chalk.blueBright(`${name}`)))
 	}
 	console.log(...i)
