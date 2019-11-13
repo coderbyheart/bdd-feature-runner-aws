@@ -21,9 +21,17 @@ Example usage:
 
 ## Special annotations
 
+### On Features
+
 - `@Skip`: Do not run this feature
 - `@Only`: Run only this feature
 - `@Last`: Run this feature after all others
+
+### On Scenarios
+
+- `@Retry`: configures the retry behaviour. Pass one or multiple settings to
+  override the default behaviour. Example:
+  `@Retry=failAfter:3,maxDelay:100,initialDelay:50`.
 
 ## Note on TypeScript 3.7 Beta
 

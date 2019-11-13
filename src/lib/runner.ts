@@ -3,6 +3,7 @@ import { ConsoleReporter } from './console-reporter';
 import { exponential } from 'backoff';
 import { messages as cucumber } from 'cucumber-messages';
 import { replaceStoragePlaceholders } from './replaceStoragePlaceholders';
+import { retryConfiguration, RetryConfiguration } from './retryConfiguration';
 
 const allSuccess = (r: boolean, result: Result) => (result.success ? r : false)
 
@@ -137,6 +138,7 @@ export class FeatureRunner<W extends Store> {
 							tries: 0,
 							stepResults: [],
 							skipped: true,
+							retryConfiguration: retryConfiguration(scenario as cucumber.GherkinDocument.Feature.IScenario),
 						})
 						return
 					}
@@ -222,13 +224,14 @@ export class FeatureRunner<W extends Store> {
 			if (lastResult.success) {
 				return resolve(lastResult)
 			}
-			// Now retry it, up to 31 seconds
+			// Now retry it
+			const cfg = retryConfiguration(scenario)
 			const b = exponential({
 				randomisationFactor: 0,
-				initialDelay: 1000,
-				maxDelay: 16000,
+				initialDelay: cfg.initialDelay,
+				maxDelay: cfg.maxDelay,
 			})
-			b.failAfter(5)
+			b.failAfter(cfg.failAfter)
 			b.on('ready', async num => {
 				const r = await this.runScenario(scenario, feature)
 				lastResult = {
@@ -250,10 +253,10 @@ export class FeatureRunner<W extends Store> {
 	}
 
 	async runScenario(
-		scenario: cucumber.GherkinDocument.Feature.IScenario |  cucumber.GherkinDocument.Feature.IBackground,
+		scenario: cucumber.GherkinDocument.Feature.IScenario | cucumber.GherkinDocument.Feature.IBackground,
 		feature: FlightRecorder,
 	): Promise<ScenarioResult> {
-		await this.progress(scenario instanceof cucumber.GherkinDocument.Feature.Background ? 'background': 'scenario', `${scenario.name}`)
+		await this.progress(scenario instanceof cucumber.GherkinDocument.Feature.Background ? 'background' : 'scenario', `${scenario.name}`)
 		const startRun = Date.now()
 		const stepResults: StepResult[] = []
 		let abort = false
@@ -297,6 +300,7 @@ export class FeatureRunner<W extends Store> {
 			stepResults,
 			tries: 1,
 			skipped: false,
+			retryConfiguration: retryConfiguration(scenario),
 		}
 	}
 
@@ -369,6 +373,7 @@ export type StepResult = Result & {
 export type ScenarioResult = Result & {
 	scenario: cucumber.GherkinDocument.Feature.IBackground | cucumber.GherkinDocument.Feature.IScenario
 	stepResults: StepResult[]
+	retryConfiguration: RetryConfiguration
 	tries: number
 	skipped: boolean
 }
