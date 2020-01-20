@@ -1,6 +1,7 @@
 import { afterRx } from './runner'
 import TokenScanner from 'gherkin/dist/src/TokenScanner'
 import AstBuilder from 'gherkin/dist/src/AstBuilder'
+import { IdGenerator } from 'cucumber-messages'
 import Parser from 'gherkin/dist/src/Parser'
 import TokenMatcher from 'gherkin/dist/src/TokenMatcher'
 import { messages as cucumber } from 'cucumber-messages'
@@ -12,7 +13,7 @@ import * as path from 'path'
 const glob = promisify(globAsync)
 import { readFileSync } from 'fs'
 
-const parser = new Parser(new AstBuilder())
+const parser = new Parser(new AstBuilder(IdGenerator.uuid()))
 const matcher = new TokenMatcher()
 
 export type SkippableFeature = cucumber.GherkinDocument.IFeature & {
@@ -39,36 +40,36 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 	const featureDependencies = sortedByLast.map(feature => {
 		const bgSteps = (feature?.children ?? [])
 			.filter(({ background }) => background)
-			.map(bg => (bg.background?.steps || [])
-				.filter(({ text }) => text && afterRx.test(text)))
+			.map(bg =>
+				(bg.background?.steps || []).filter(
+					({ text }) => text && afterRx.test(text),
+				),
+			)
 			.flat()
 
-		const runAfter = bgSteps.map(
-				afterStep => {
-					const m = afterStep.text && afterRx.exec(afterStep.text)
-					if (!m) {
-						throw new Error(`Failed to find feature in ${afterStep.text}`)
-					}
-					if (!featureNames.includes(m[1])) {
-						throw new Error(
-							`The feature ${m[1]} you want to run after does not exist!`,
-						)
-					}
-					return m[1]
-				}
-			)
-
-			if (runAfter.length) {
-				return runAfter.map(dep => [dep, feature.name])
+		const runAfter = bgSteps.map(afterStep => {
+			const m = afterStep.text && afterRx.exec(afterStep.text)
+			if (!m) {
+				throw new Error(`Failed to find feature in ${afterStep.text}`)
 			}
+			if (!featureNames.includes(m[1])) {
+				throw new Error(
+					`The feature ${m[1]} you want to run after does not exist!`,
+				)
+			}
+			return m[1]
+		})
 
-			return [[feature.name, undefined]]
+		if (runAfter.length) {
+			return runAfter.map(dep => [dep, feature.name])
+		}
+
+		return [[feature.name, undefined]]
 	})
 
-	const sortedFeatureNames = toposort(featureDependencies.flat() as [
-		string,
-		string | undefined,
-	][]).filter((feature?: any) => feature)
+	const sortedFeatureNames = toposort(
+		featureDependencies.flat() as [string, string | undefined][],
+	).filter((feature?: any) => feature)
 
 	const dependencies = (
 		f: cucumber.GherkinDocument.IFeature,
