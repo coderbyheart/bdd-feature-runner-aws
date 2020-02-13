@@ -1,9 +1,9 @@
-import { fromDirectory, SkippableFeature } from './load-features';
-import { ConsoleReporter } from './console-reporter';
-import { exponential } from 'backoff';
-import { messages as cucumber } from 'cucumber-messages';
-import { replaceStoragePlaceholders } from './replaceStoragePlaceholders';
-import { retryConfiguration, RetryConfiguration } from './retryConfiguration';
+import { fromDirectory, SkippableFeature } from './load-features'
+import { ConsoleReporter } from './console-reporter'
+import { exponential } from 'backoff'
+import { messages as cucumber } from 'cucumber-messages'
+import { replaceStoragePlaceholders } from './replaceStoragePlaceholders'
+import { retryConfiguration, RetryConfiguration } from './retryConfiguration'
 
 const allSuccess = (r: boolean, result: Result) => (result.success ? r : false)
 
@@ -125,7 +125,7 @@ export class FeatureRunner<W extends Store> {
 			flags: {},
 			settings: {},
 		} as const
-		await (feature?.children ?? []).reduce(
+		await feature?.children?.reduce(
 			(promise, scenario) =>
 				promise.then(async () => {
 					if (
@@ -138,7 +138,9 @@ export class FeatureRunner<W extends Store> {
 							tries: 0,
 							stepResults: [],
 							skipped: true,
-							retryConfiguration: retryConfiguration(scenario as cucumber.GherkinDocument.Feature.IScenario),
+							retryConfiguration: retryConfiguration(
+								scenario as cucumber.GherkinDocument.Feature.IScenario,
+							),
 						})
 						return
 					}
@@ -148,27 +150,30 @@ export class FeatureRunner<W extends Store> {
 						let scenarioOutline = scenario.scenario
 						const example = scenarioOutline.examples?.[0]
 						if (example) {
-							const header = (example.tableHeader?.cells ?? []).map(({ value }) => value)
-							await (example?.tableBody ?? []).reduce(
+							const header = example.tableHeader?.cells?.map(
+								({ value }) => value,
+							)
+							await example.tableBody?.reduce(
 								(promise, example) =>
 									promise.then(async () => {
-										const values = (example?.cells ?? []).map(({ value }) => value)
+										const values = example?.cells?.map(({ value }) => value)
 										const replace = (str: string) =>
-											header.reduce(
-												(str, _, k) => str?.replace(`<${header[k]}>`, values?.[k] ?? ''),
+											header?.reduce(
+												(str, _, k) =>
+													str?.replace(`<${header[k]}>`, values?.[k] ?? ''),
 												str,
 											)
 										const s: cucumber.GherkinDocument.Feature.IScenario = {
 											keyword: 'Scenario',
 											name: `${scenario.scenario?.name} (${values?.join(',')})`,
-											steps: (scenario.scenario?.steps ?? []).map(step => ({
+											steps: scenario.scenario?.steps?.map(step => ({
 												...step,
 												text: replace(step.text || ''),
 												docString: step.docString
 													? {
-														...step.docString,
-														content: replace(step.docString.content || ''),
-													}
+															...step.docString,
+															content: replace(step.docString.content || ''),
+													  }
 													: undefined,
 											})),
 										}
@@ -193,9 +198,7 @@ export class FeatureRunner<W extends Store> {
 									await this.retryScenario(s, flightRecorder),
 								)
 							} else {
-								scenarioResults.push(
-									await this.runScenario(s, flightRecorder),
-								)
+								scenarioResults.push(await this.runScenario(s, flightRecorder))
 							}
 						}
 					}
@@ -253,14 +256,21 @@ export class FeatureRunner<W extends Store> {
 	}
 
 	async runScenario(
-		scenario: cucumber.GherkinDocument.Feature.IScenario | cucumber.GherkinDocument.Feature.IBackground,
+		scenario:
+			| cucumber.GherkinDocument.Feature.IScenario
+			| cucumber.GherkinDocument.Feature.IBackground,
 		feature: FlightRecorder,
 	): Promise<ScenarioResult> {
-		await this.progress(scenario instanceof cucumber.GherkinDocument.Feature.Background ? 'background' : 'scenario', `${scenario.name}`)
+		await this.progress(
+			scenario instanceof cucumber.GherkinDocument.Feature.Background
+				? 'background'
+				: 'scenario',
+			`${scenario.name}`,
+		)
 		const startRun = Date.now()
 		const stepResults: StepResult[] = []
 		let abort = false
-		await (scenario?.steps ?? []).reduce(
+		await scenario?.steps?.reduce(
 			(promise, step) =>
 				promise
 					.then(async () => {
@@ -304,7 +314,10 @@ export class FeatureRunner<W extends Store> {
 		}
 	}
 
-	async runStep(step: cucumber.GherkinDocument.Feature.IStep, feature: FlightRecorder): Promise<StepResult> {
+	async runStep(
+		step: cucumber.GherkinDocument.Feature.IStep,
+		feature: FlightRecorder,
+	): Promise<StepResult> {
 		await this.progress('step', `${step.text}`)
 		const r = replaceStoragePlaceholders({
 			...this.world,
@@ -326,19 +339,16 @@ export class FeatureRunner<W extends Store> {
 			}
 		}
 
-		const matchedRunner = this.stepRunners.reduce(
-			(matchedRunner, runner) => {
-				if (matchedRunner) {
-					return matchedRunner
-				}
-				const r = runner(interpolatedStep)
-				if (r) {
-					return r
-				}
-				return undefined
-			},
-			undefined as (undefined | StepRunnerFunc<W>),
-		)
+		const matchedRunner = this.stepRunners.reduce((matchedRunner, runner) => {
+			if (matchedRunner) {
+				return matchedRunner
+			}
+			const r = runner(interpolatedStep)
+			if (r) {
+				return r
+			}
+			return undefined
+		}, undefined as undefined | StepRunnerFunc<W>)
 
 		if (!matchedRunner) {
 			throw new StepRunnerNotDefinedError(interpolatedStep)
@@ -371,7 +381,9 @@ export type StepResult = Result & {
 }
 
 export type ScenarioResult = Result & {
-	scenario: cucumber.GherkinDocument.Feature.IBackground | cucumber.GherkinDocument.Feature.IScenario
+	scenario:
+		| cucumber.GherkinDocument.Feature.IBackground
+		| cucumber.GherkinDocument.Feature.IScenario
 	stepResults: StepResult[]
 	retryConfiguration: RetryConfiguration
 	tries: number

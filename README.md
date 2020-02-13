@@ -32,13 +32,3 @@ Example usage:
 - `@Retry`: configures the retry behaviour. Pass one or multiple settings to
   override the default behaviour. Example:
   `@Retry=failAfter:3,maxDelay:100,initialDelay:50`.
-
-## Note on TypeScript 3.7 Beta
-
-This project makes use of TypeScript 3.7 features, therefore typescript-eslint
-is currently disabled
-[until it supports them](https://github.com/typescript-eslint/typescript-eslint/issues/1033).
-
-Also once
-[this fix has been published](https://github.com/microsoft/TypeScript/issues/33744)
-replace `(example?.tableBody ?? []).filter` with `example?.tableBody?.filter`.

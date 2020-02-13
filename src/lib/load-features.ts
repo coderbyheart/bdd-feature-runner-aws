@@ -38,8 +38,8 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 
 	// Sort the features by the step 'I am run after the "..." feature' using toposort
 	const featureDependencies = sortedByLast.map(feature => {
-		const bgSteps = (feature?.children ?? [])
-			.filter(({ background }) => background)
+		const bgSteps = feature.children
+			?.filter(({ background }) => background)
 			.map(bg =>
 				(bg.background?.steps || []).filter(
 					({ text }) => text && afterRx.test(text),
@@ -47,7 +47,7 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 			)
 			.flat()
 
-		const runAfter = bgSteps.map(afterStep => {
+		const runAfter = bgSteps?.map(afterStep => {
 			const m = afterStep.text && afterRx.exec(afterStep.text)
 			if (!m) {
 				throw new Error(`Failed to find feature in ${afterStep.text}`)
@@ -60,7 +60,7 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 			return m[1]
 		})
 
-		if (runAfter.length) {
+		if (runAfter?.length) {
 			return runAfter.map(dep => [dep, feature.name])
 		}
 
@@ -92,7 +92,7 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 
 	// Find features to be skipped
 	const isOnly = (f: cucumber.GherkinDocument.IFeature) =>
-		(f?.tags ?? []).find(({ name }) => name === '@Only')
+		f?.tags?.find(({ name }) => name === '@Only')
 	const only = parsedFeatures.filter(isOnly)
 	const onlyNames = only.map(({ name }) => name)
 
