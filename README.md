@@ -10,6 +10,12 @@ runner for cloud native applications made with AWS.
 Example usage:
 [bdd-feature-runner-aws-example](https://github.com/coderbyheart/bdd-feature-runner-aws-example).
 
+## Motivation
+
+<iframe width="880" height="495" src="https://www.youtube-nocookie.com/embed/yt7oJ-To4kI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+[Slides](https://coderbyheart.com/it-does-not-run-on-my-machine/)
+
 ## Installation
 
 > Note: This package is hosted on the GitHub package registry and
