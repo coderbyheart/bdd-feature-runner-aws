@@ -12,7 +12,7 @@ Example usage:
 
 ## Motivation
 
-<iframe width="880" height="495" src="https://www.youtube-nocookie.com/embed/yt7oJ-To4kI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+[![Video](./video.jpg)](https://youtu.be/yt7oJ-To4kI)
 
 [Slides](https://coderbyheart.com/it-does-not-run-on-my-machine/)
 
