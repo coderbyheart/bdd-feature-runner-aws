@@ -1,1 +1,7 @@
-{"extends": "@nrfcloud/tslint-config"}
+{
+  "extends": "@bifravst/code-style/tsconfig.json",
+  "include": ["**/*.ts"],
+  "compilerOptions": {
+    "outDir": "dist/"
+  }
+}
