@@ -64,7 +64,7 @@
     "husky": "^4.2.3",
     "jest": "^25.1.0",
     "ts-jest": "^25.2.0",
-    "typescript": "^3.9.0-dev.20200213"
+    "typescript": "^3.7.5"
   },
   "files": [
     "package-lock.json",
