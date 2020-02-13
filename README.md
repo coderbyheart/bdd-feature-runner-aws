@@ -12,9 +12,10 @@ Example usage:
 
 ## Motivation
 
-[![Video](./video.jpg)](https://youtu.be/yt7oJ-To4kI)
-
+[Video](https://youtu.be/yt7oJ-To4kI) ·
 [Slides](https://coderbyheart.com/it-does-not-run-on-my-machine/)
+
+[![Video](./video.jpg)](https://youtu.be/yt7oJ-To4kI)
 
 ## Installation
 
