@@ -207,13 +207,13 @@ export const appSyncStepRunners = () => [
 		checks[expected](jsonata(exp).evaluate(opResult))
 		return opResult
 	}),
-	regexMatcher(/^the GQL queries are authorized with Cognito$/)(
+	regexMatcher(/^the GQL queries are authenticated with Cognito$/)(
 		async (_, __, runner) => {
 			const { appSyncClient: client } = runner.store
 			client.authorization = 'IAM'
 		},
 	),
-	regexMatcher(/^the GQL queries are authorized with the API key "([^"]+)"$/)(
+	regexMatcher(/^the GQL queries are authenticated with the API key "([^"]+)"$/)(
 		async ([apiKey], __, runner) => {
 			const { appSyncClient: client } = runner.store
 			client.authorization = 'API_KEY'
@@ -303,7 +303,7 @@ export const appSyncStepRunners = () => [
 		const { appSyncClient: client } = runner.store
 		const message =
 			client.subscriptionMessages[subscriptionId][
-				client.subscriptionMessages[subscriptionId].length - 1
+			client.subscriptionMessages[subscriptionId].length - 1
 			]
 		expect(jsonata(exp).evaluate(message)).to.equal(expected)
 	}),
