@@ -3,6 +3,9 @@ import { expect } from 'chai'
 import { Store } from '../lib/runner'
 import { regexMatcher } from '../lib/regexMatcher'
 import { WebhookReceiver } from '../lib/webhook-receiver'
+import * as chaiSubset from 'chai-subset'
+
+chai.use(chaiSubset)
 
 let r: WebhookReceiver
 
@@ -26,15 +29,19 @@ export const webhookStepRunners = <W extends WebhookStepRunnersWorld>({ region }
 		expect(result).to.deep.equal(expected)
 		return b
 	}),
-	regexMatcher<W>(/^the webhook request body should equal this JSON$/)(
-		async (_, step) => {
+	regexMatcher<W>(/^the webhook request body should (equal|match) this JSON$/)(
+		async ([equalOrMatch], step) => {
 			if (!step.interpolatedArgument) {
 				throw new Error('Must provide argument!')
 			}
 			const j = JSON.parse(step.interpolatedArgument)
 			const b = r.latestWebhookRequest && r.latestWebhookRequest.body
 			expect(b).not.to.be.an('undefined')
-			expect(b).to.deep.equal(j)
+			if (equalOrMatch === 'match') {
+				expect(b).to.containSubset(j)
+			} else {
+				expect(b).to.deep.equal(j)
+			}
 			return b
 		},
 	),
