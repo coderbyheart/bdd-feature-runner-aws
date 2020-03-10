@@ -1,4 +1,5 @@
 import * as jsonata from 'jsonata'
+import * as chai from 'chai'
 import { expect } from 'chai'
 import { Store } from '../lib/runner'
 import { regexMatcher } from '../lib/regexMatcher'
