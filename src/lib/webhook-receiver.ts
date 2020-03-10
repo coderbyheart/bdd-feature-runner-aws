@@ -16,7 +16,7 @@ export class WebhookReceiver {
 
 	constructor(queueUrl: string, region: string) {
 		this.queueUrl = queueUrl
-		this.sqs = new SQS({region})
+		this.sqs = new SQS({ region })
 	}
 
 	/**
@@ -38,7 +38,7 @@ export class WebhookReceiver {
 				MaxNumberOfMessages: 1,
 				MessageAttributeNames: ['All'],
 				AttributeNames: ['MessageGroupId'],
-				WaitTimeSeconds: 0,
+				WaitTimeSeconds: 20,
 			})
 			.promise()
 		if (Messages === undefined || !Messages.length) {
@@ -56,7 +56,7 @@ export class WebhookReceiver {
 			MessageGroupId: RcvdMessageGroupId,
 		} = Attributes as SQS.Types.MessageSystemAttributeMap
 		this.latestWebhookRequest = {
-			headers: Object.keys(attrs).reduce(
+			headers: Object.keys(attrs || {}).reduce(
 				(hdrs: { [key: string]: string }, key) => {
 					hdrs[key] = attrs[key].StringValue as string
 					return hdrs
@@ -70,7 +70,7 @@ export class WebhookReceiver {
 			JSON.stringify(this.latestWebhookRequest.body),
 		)
 		if (RcvdMessageGroupId !== MessageGroupId) {
-			throw new Error('Wrong webhook request received!')
+			throw new Error(`Wrong webhook request received! Expected "${MessageGroupId}", got "${RcvdMessageGroupId}"`)
 		}
 		return this.latestWebhookRequest
 	}
