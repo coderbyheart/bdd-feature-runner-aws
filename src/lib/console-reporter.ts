@@ -75,6 +75,7 @@ const reportFeature = (result: FeatureResult) => {
 		console.log('', chalk.yellow.bold(`${result.feature.name}`))
 		console.log('')
 
+<<<<<<< HEAD
 		i.push(result.success ? chalk.green(' 💯') : chalk.red.bold(' ❌'))
 		if (result.runTime) {
 			i.push(chalk.blue(`⏱ ${result.runTime}ms`))
@@ -85,6 +86,21 @@ const reportFeature = (result: FeatureResult) => {
 	}
 	console.log(...i)
 }
+=======
+  if (result.feature.skip) {
+    i.push(chalk.magenta(' ↷ '), chalk.magenta('(skipped)'));
+  } else {
+    i.push(result.success ? ' 💚' : ' ❌');
+    if (result.runTime) {
+      i.push(chalk.blue(`⏱ ${result.runTime}ms`));
+    }
+  }
+  if (result.feature.tags.length) {
+    i.push(chalk.magenta(result.feature.tags.map(({ name }) => name)));
+  }
+  console.log(...i);
+};
+>>>>>>> f750488... fix: better icons for red/green visual scanning
 
 const reportScenario = (result: ScenarioResult) => {
 	console.log('')
@@ -114,7 +130,7 @@ const reportScenario = (result: ScenarioResult) => {
 const reportRunResult = (success: boolean, runTime?: number) => {
 	console.log('')
 	const i = [
-		success ? chalk.green(' 💯 ALL PASS ') : chalk.red.bold(' 💀 FAIL 👎 '),
+		success ? chalk.green(' 💚 ALL PASS 👍 ') : chalk.red.bold(' ❌ FAIL 👎 '),
 	]
 	if (runTime) {
 		i.push(chalk.blue(`⏱ ${runTime}ms`))
