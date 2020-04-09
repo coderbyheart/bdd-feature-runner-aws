@@ -10,17 +10,32 @@ import * as chalk from 'chalk'
 import * as Chai from 'chai'
 import { messages as cucumber } from 'cucumber-messages'
 
-type Config = { printResults: boolean; printProgress: boolean, printProgressTimestamps?: boolean }
+type Config = {
+	printResults: boolean
+	printProgress: boolean
+	printProgressTimestamps?: boolean
+}
 
 export class ConsoleReporter implements Reporter {
 	private readonly config: Config
 	private lastProgress?: number
 
-	constructor(config: Config = { printResults: false, printProgress: false, printProgressTimestamps: false }) {
+	constructor(
+		config: Config = {
+			printResults: false,
+			printProgress: false,
+			printProgressTimestamps: false,
+		},
+	) {
 		this.config = config
 	}
 
 	async report(result: RunResult) {
+		console.log('')
+		console.log('-----------------------------')
+		console.log('Feature Test Detailed Results')
+		console.log('-----------------------------')
+		console.log('')
 		result.featureResults.forEach(featureResult => {
 			reportFeature(featureResult)
 			featureResult.scenarioResults.forEach(scenarioResult => {
@@ -29,6 +44,21 @@ export class ConsoleReporter implements Reporter {
 					reportStep(stepResult, this.config)
 				})
 			})
+		})
+		console.log('')
+		console.log('--------------------------------')
+		console.log('Feature Test Summary of Failures')
+		console.log('--------------------------------')
+		console.log('')
+		result.featureResults.forEach(featureResult => {
+			if (!featureResult.feature.skip && !featureResult.success) {
+				reportFeature(featureResult)
+				featureResult.scenarioResults.forEach(scenarioResult => {
+					if (!scenarioResult.skipped && !scenarioResult.success) {
+						reportScenario(scenarioResult)
+					}
+				})
+			}
 		})
 		reportRunResult(result.success, result.runTime)
 		if (result.error) {
@@ -48,8 +78,7 @@ export class ConsoleReporter implements Reporter {
 		if (this.config.printProgressTimestamps) {
 			i.push(chalk.grey(`[${new Date().toISOString()}]`))
 		}
-		i.push(chalk.magenta(' ℹ '),
-			chalk.cyan(type))
+		i.push(chalk.magenta(' ℹ '), chalk.cyan(type))
 		if (info) {
 			i.push(chalk.grey(info))
 		}
@@ -72,11 +101,10 @@ const reportFeature = (result: FeatureResult) => {
 			chalk.magenta('↷ (skipped)'),
 		)
 	} else {
-		console.log('', chalk.yellow.bold(`${result.feature.name}`))
+		console.log('', 'Feature: ', chalk.yellow.bold(`${result.feature.name}`))
 		console.log('')
 
-<<<<<<< HEAD
-		i.push(result.success ? chalk.green(' 💯') : chalk.red.bold(' ❌'))
+		i.push(result.success ? ' 💚' : ' ❌')
 		if (result.runTime) {
 			i.push(chalk.blue(`⏱ ${result.runTime}ms`))
 		}
@@ -86,27 +114,14 @@ const reportFeature = (result: FeatureResult) => {
 	}
 	console.log(...i)
 }
-=======
-  if (result.feature.skip) {
-    i.push(chalk.magenta(' ↷ '), chalk.magenta('(skipped)'));
-  } else {
-    i.push(result.success ? ' 💚' : ' ❌');
-    if (result.runTime) {
-      i.push(chalk.blue(`⏱ ${result.runTime}ms`));
-    }
-  }
-  if (result.feature.tags.length) {
-    i.push(chalk.magenta(result.feature.tags.map(({ name }) => name)));
-  }
-  console.log(...i);
-};
->>>>>>> f750488... fix: better icons for red/green visual scanning
 
 const reportScenario = (result: ScenarioResult) => {
 	console.log('')
-	const type = result.scenario instanceof cucumber.GherkinDocument.Feature.Background ?
-		'Background' : 'Scenario'
-	const i = [chalk.gray(type)]
+	const type =
+		result.scenario instanceof cucumber.GherkinDocument.Feature.Background
+			? 'Background'
+			: 'Scenario'
+	const i = [chalk.gray(type) + ':']
 	if (result.skipped) {
 		i.push(chalk.magenta(' ↷ '), chalk.magenta('(skipped)'))
 		if (result.scenario.name) {
