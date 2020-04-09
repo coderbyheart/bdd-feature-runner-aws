@@ -33,7 +33,7 @@ export class ConsoleReporter implements Reporter {
 	async report(result: RunResult) {
 		console.log('')
 		console.log('-----------------------------')
-		console.log('Feature Test Detailed Results')
+		console.log('Feature Tests Detailed Results')
 		console.log('-----------------------------')
 		console.log('')
 		result.featureResults.forEach(featureResult => {
@@ -47,19 +47,46 @@ export class ConsoleReporter implements Reporter {
 		})
 		console.log('')
 		console.log('--------------------------------')
-		console.log('Feature Test Summary of Failures')
+		console.log('Feature Tests Summary of Failures')
 		console.log('--------------------------------')
 		console.log('')
+		const features = result.featureResults.length
+		let featuresSkipped = 0
+		let featureFailures = 0
+		let scenarios = 0
+		let scenariosSkipped = 0
+		let scenarioFailures = 0
+		let featureFailed = false
 		result.featureResults.forEach(featureResult => {
-			if (!featureResult.feature.skip && !featureResult.success) {
+			featureFailed = false
+			if (featureResult.feature.skip) {
+				featuresSkipped++
+			} else if (!featureResult.success) {
+				featureFailures++
+				featureFailed = true
 				reportFeature(featureResult)
-				featureResult.scenarioResults.forEach(scenarioResult => {
-					if (!scenarioResult.skipped && !scenarioResult.success) {
-						reportScenario(scenarioResult)
-					}
-				})
 			}
+			featureResult.scenarioResults.forEach(scenarioResult => {
+				scenarios++
+				if (featureResult.feature.skip || scenarioResult.skipped) {
+					scenariosSkipped++
+				} else if (featureFailed && !scenarioResult.success) {
+					scenarioFailures++
+					reportScenario(scenarioResult)
+				}
+			})
 		})
+		const featuresPassed = features - featuresSkipped - featureFailures
+		const scenariosPassed = scenarios - scenariosSkipped - scenarioFailures
+		console.log(
+			`Feature Summary:  ${featureFailures} failed, ${featuresSkipped} skipped, ` +
+				`${featuresPassed} passed, ${features} total`,
+		)
+		console.log(
+			`Scenario Summary: ${scenarioFailures} failed, ${scenariosSkipped} skipped, ` +
+				`${scenariosPassed} passed, ${scenarios} total ` +
+				(featuresSkipped ? `(for non-skipped features)` : ''),
+		)
 		reportRunResult(result.success, result.runTime)
 		if (result.error) {
 			console.error(
