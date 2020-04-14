@@ -234,36 +234,45 @@ const reportStep = (console: Console) => (
 }
 
 const reportSummary = (console: Console) => (result: RunResult) => {
+	// Print failed scenario and Feature
 	const featureReporter = reportFeature(console)
 	const scenarioReporter = reportScenario(console)
-	const features = result.featureResults.length
-	let featuresSkipped = 0
-	let featureFailures = 0
-	let scenarios = 0
-	let scenariosSkipped = 0
-	let scenarioFailures = 0
-	let featureFailed = false
-	result.featureResults.forEach(featureResult => {
-		featureFailed = false
-		if (featureResult.feature.skip) {
-			featuresSkipped++
-		} else if (!featureResult.success) {
-			featureFailures++
-			featureFailed = true
+	result.featureResults
+		.filter(({ success }) => !success)
+		.forEach(featureResult => {
+			const failedScenarios = featureResult.scenarioResults.filter(
+				({ success }) => !success,
+			)
 			featureReporter(featureResult)
-		}
-		featureResult.scenarioResults.forEach(scenarioResult => {
-			scenarios++
-			if (featureResult.feature.skip || scenarioResult.skipped) {
-				scenariosSkipped++
-			} else if (featureFailed && !scenarioResult.success) {
-				scenarioFailures++
-				scenarioReporter(scenarioResult)
-			}
+			failedScenarios.forEach(scenarioReporter)
 		})
-	})
-	const featuresPassed = features - featuresSkipped - featureFailures
-	const scenariosPassed = scenarios - scenariosSkipped - scenarioFailures
+
+	// Print summary
+	const features = result.featureResults.length
+	const skippedFeatures = result.featureResults.reduce(
+		(total, { feature }) => total + (feature.skip ? 1 : 0),
+		0,
+	)
+	const failedFeatures = result.featureResults.reduce(
+		(total, { success }) => total + (!success ? 1 : 0),
+		0,
+	)
+	const scenarios = result.featureResults.reduce(
+		(total, { scenarioResults }) => total + scenarioResults.length,
+		0,
+	)
+	const skippedScenarios = result.featureResults.reduce(
+		(total, { scenarioResults }) =>
+			total + scenarioResults.filter(({ skipped }) => skipped).length,
+		0,
+	)
+	const failedScenarios = result.featureResults.reduce(
+		(total, { scenarioResults }) =>
+			total + scenarioResults.filter(({ success }) => !success).length,
+		0,
+	)
+	const passedFeatures = features - skippedFeatures - failedFeatures
+	const passedScenarioCount = scenarios - skippedScenarios - failedScenarios
 
 	const colorIf = (color: chalk.Chalk, defaultColor = chalk.green) => (
 		cond: (n: number) => boolean,
@@ -277,26 +286,26 @@ const reportSummary = (console: Console) => (result: RunResult) => {
 	console.log(
 		'',
 		chalk.gray('Feature Summary:  '),
-		redIf(n => n > 0, featureFailures),
+		redIf(n => n > 0, failedFeatures),
 		chalk.gray('failed,'),
-		yellowIf(n => n > 0, featuresSkipped),
+		yellowIf(n => n > 0, skippedFeatures),
 		chalk.gray('skipped,'),
-		redIf(n => n > 0, featuresPassed, featureFailures),
+		redIf(n => n > 0, passedFeatures, failedFeatures),
 		chalk.gray('passed,'),
 		chalk.gray(`${features} total`),
 	)
 	console.log(
 		'',
 		chalk.gray('Scenario Summary: '),
-		redIf(n => n > 0, scenarioFailures),
+		redIf(n => n > 0, failedScenarios),
 		chalk.gray('failed,'),
-		yellowIf(n => n > 0, scenariosSkipped),
+		yellowIf(n => n > 0, skippedScenarios),
 		chalk.gray('skipped,'),
-		redIf(n => n > 0, scenariosPassed, scenarioFailures),
+		redIf(n => n > 0, passedScenarioCount, failedScenarios),
 		chalk.gray('passed,'),
 		chalk.gray(
 			`${scenarios} total${
-				featuresSkipped ? ` (for non-skipped features)` : ''
+				skippedFeatures ? ` (for non-skipped features)` : ''
 			}`,
 		),
 	)
