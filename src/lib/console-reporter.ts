@@ -10,86 +10,61 @@ import * as chalk from 'chalk'
 import * as Chai from 'chai'
 import { messages as cucumber } from 'cucumber-messages'
 
-type Config = {
+export type Config = {
 	printResults: boolean
 	printProgress: boolean
+	printSummary: boolean
 	printProgressTimestamps?: boolean
+	console?: Console
+}
+
+export type Console = {
+	log: (...args: any) => void
+	error: (...args: any) => void
 }
 
 export class ConsoleReporter implements Reporter {
 	private readonly config: Config
 	private lastProgress?: number
+	private readonly console: Console
 
-	constructor(
-		config: Config = {
-			printResults: false,
-			printProgress: false,
-			printProgressTimestamps: false,
-		},
-	) {
-		this.config = config
+	constructor(config?: Partial<Config>) {
+		this.config = {
+			...{
+				printResults: false,
+				printProgress: false,
+				printProgressTimestamps: false,
+				printSummary: false,
+			},
+			...config,
+		}
+		this.console = config?.console ?? console
 	}
 
 	async report(result: RunResult) {
-		console.log('')
-		console.log('-----------------------------')
-		console.log('Feature Tests Detailed Results')
-		console.log('-----------------------------')
-		console.log('')
+		const featureReporter = reportFeature(this.console)
+		const scenarioReporter = reportScenario(this.console)
+		const stepReporter = reportStep(this.console)
+		const runResultReporter = reportRunResult(this.console)
+
 		result.featureResults.forEach(featureResult => {
-			reportFeature(featureResult)
+			featureReporter(featureResult)
 			featureResult.scenarioResults.forEach(scenarioResult => {
-				reportScenario(scenarioResult)
+				scenarioReporter(scenarioResult)
 				scenarioResult.stepResults.forEach(stepResult => {
-					reportStep(stepResult, this.config)
+					stepReporter(stepResult, this.config)
 				})
 			})
 		})
-		console.log('')
-		console.log('--------------------------------')
-		console.log('Feature Tests Summary of Failures')
-		console.log('--------------------------------')
-		console.log('')
-		const features = result.featureResults.length
-		let featuresSkipped = 0
-		let featureFailures = 0
-		let scenarios = 0
-		let scenariosSkipped = 0
-		let scenarioFailures = 0
-		let featureFailed = false
-		result.featureResults.forEach(featureResult => {
-			featureFailed = false
-			if (featureResult.feature.skip) {
-				featuresSkipped++
-			} else if (!featureResult.success) {
-				featureFailures++
-				featureFailed = true
-				reportFeature(featureResult)
-			}
-			featureResult.scenarioResults.forEach(scenarioResult => {
-				scenarios++
-				if (featureResult.feature.skip || scenarioResult.skipped) {
-					scenariosSkipped++
-				} else if (featureFailed && !scenarioResult.success) {
-					scenarioFailures++
-					reportScenario(scenarioResult)
-				}
-			})
-		})
-		const featuresPassed = features - featuresSkipped - featureFailures
-		const scenariosPassed = scenarios - scenariosSkipped - scenarioFailures
-		console.log(
-			`Feature Summary:  ${featureFailures} failed, ${featuresSkipped} skipped, ` +
-				`${featuresPassed} passed, ${features} total`,
-		)
-		console.log(
-			`Scenario Summary: ${scenarioFailures} failed, ${scenariosSkipped} skipped, ` +
-				`${scenariosPassed} passed, ${scenarios} total ` +
-				(featuresSkipped ? `(for non-skipped features)` : ''),
-		)
-		reportRunResult(result.success, result.runTime)
+
+		if (this.config.printSummary) {
+			const summaryReporter = reportSummary(this.console)
+			summaryReporter(result)
+		}
+
+		runResultReporter(result.success, result.runTime)
 		if (result.error) {
-			console.error(
+			this.console.error(
 				' ',
 				chalk.red.bold(' 🚨 '),
 				chalk.yellow(result.error.message),
@@ -113,11 +88,11 @@ export class ConsoleReporter implements Reporter {
 			i.push(chalk.blue(`⏱ +${Date.now() - this.lastProgress}ms`))
 		}
 		this.lastProgress = Date.now()
-		console.log(...i)
+		this.console.log(...i)
 	}
 }
 
-const reportFeature = (result: FeatureResult) => {
+const reportFeature = (console: Console) => (result: FeatureResult) => {
 	console.log('')
 	const i = []
 
@@ -128,10 +103,15 @@ const reportFeature = (result: FeatureResult) => {
 			chalk.magenta('↷ (skipped)'),
 		)
 	} else {
-		console.log('', 'Feature: ', chalk.yellow.bold(`${result.feature.name}`))
+		console.log(
+			'',
+			chalk.gray('Feature: '),
+			chalk.yellow.bold(`${result.feature.name}`),
+		)
 		console.log('')
 
-		i.push(result.success ? ' 💚' : ' ❌')
+		i.push(result.success ? chalk.green(' 💯') : chalk.red.bold(' ❌'))
+
 		if (result.runTime) {
 			i.push(chalk.blue(`⏱ ${result.runTime}ms`))
 		}
@@ -142,7 +122,7 @@ const reportFeature = (result: FeatureResult) => {
 	console.log(...i)
 }
 
-const reportScenario = (result: ScenarioResult) => {
+const reportScenario = (console: Console) => (result: ScenarioResult) => {
 	console.log('')
 	const type =
 		result.scenario instanceof cucumber.GherkinDocument.Feature.Background
@@ -169,10 +149,13 @@ const reportScenario = (result: ScenarioResult) => {
 	console.log('')
 }
 
-const reportRunResult = (success: boolean, runTime?: number) => {
+const reportRunResult = (console: Console) => (
+	success: boolean,
+	runTime?: number,
+) => {
 	console.log('')
 	const i = [
-		success ? chalk.green(' 💚 ALL PASS 👍 ') : chalk.red.bold(' ❌ FAIL 👎 '),
+		success ? chalk.green(' 💯 ALL PASS 👍 ') : chalk.red.bold(' ❌ FAIL 👎 '),
 	]
 	if (runTime) {
 		i.push(chalk.blue(`⏱ ${runTime}ms`))
@@ -184,7 +167,10 @@ const reportRunResult = (success: boolean, runTime?: number) => {
 	console.log('')
 }
 
-const reportStep = (result: StepResult, config: Config) => {
+const reportStep = (console: Console) => (
+	result: StepResult,
+	config: Config,
+) => {
 	const i = [' ']
 	if (result.skipped) {
 		i.push(chalk.gray(' ↷ '))
@@ -245,4 +231,73 @@ const reportStep = (result: StepResult, config: Config) => {
 			)
 		}
 	}
+}
+
+const reportSummary = (console: Console) => (result: RunResult) => {
+	const featureReporter = reportFeature(console)
+	const scenarioReporter = reportScenario(console)
+	const features = result.featureResults.length
+	let featuresSkipped = 0
+	let featureFailures = 0
+	let scenarios = 0
+	let scenariosSkipped = 0
+	let scenarioFailures = 0
+	let featureFailed = false
+	result.featureResults.forEach(featureResult => {
+		featureFailed = false
+		if (featureResult.feature.skip) {
+			featuresSkipped++
+		} else if (!featureResult.success) {
+			featureFailures++
+			featureFailed = true
+			featureReporter(featureResult)
+		}
+		featureResult.scenarioResults.forEach(scenarioResult => {
+			scenarios++
+			if (featureResult.feature.skip || scenarioResult.skipped) {
+				scenariosSkipped++
+			} else if (featureFailed && !scenarioResult.success) {
+				scenarioFailures++
+				scenarioReporter(scenarioResult)
+			}
+		})
+	})
+	const featuresPassed = features - featuresSkipped - featureFailures
+	const scenariosPassed = scenarios - scenariosSkipped - scenarioFailures
+
+	const colorIf = (color: chalk.Chalk, defaultColor = chalk.green) => (
+		cond: (n: number) => boolean,
+		n: number,
+		c = n,
+	) => (cond(c) ? color(n) : defaultColor(n))
+	const redIf = colorIf(chalk.redBright.bold)
+	const yellowIf = colorIf(chalk.yellow, chalk.gray)
+
+	console.log('')
+	console.log(
+		'',
+		chalk.gray('Feature Summary:  '),
+		redIf(n => n > 0, featureFailures),
+		chalk.gray('failed,'),
+		yellowIf(n => n > 0, featuresSkipped),
+		chalk.gray('skipped,'),
+		redIf(n => n > 0, featuresPassed, featureFailures),
+		chalk.gray('passed,'),
+		chalk.gray(`${features} total`),
+	)
+	console.log(
+		'',
+		chalk.gray('Scenario Summary: '),
+		redIf(n => n > 0, scenarioFailures),
+		chalk.gray('failed,'),
+		yellowIf(n => n > 0, scenariosSkipped),
+		chalk.gray('skipped,'),
+		redIf(n => n > 0, scenariosPassed, scenarioFailures),
+		chalk.gray('passed,'),
+		chalk.gray(
+			`${scenarios} total${
+				featuresSkipped ? ` (for non-skipped features)` : ''
+			}`,
+		),
+	)
 }
