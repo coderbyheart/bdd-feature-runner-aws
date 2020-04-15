@@ -43,3 +43,7 @@ Example usage:
 - `@Retry`: configures the retry behaviour. Pass one or multiple settings to
   override the default behaviour. Example:
   `@Retry=failAfter:3,maxDelay:100,initialDelay:50`.
+
+## Architecture decision records (ADRs)
+
+see [./adr](./adr).
