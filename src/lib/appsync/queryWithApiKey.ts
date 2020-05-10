@@ -1,11 +1,12 @@
 import fetch from 'node-fetch'
 import { parse } from 'url'
 import { parseQuery } from './parseQuery'
+import { GQLQueryResult } from '../gql-query-result'
 
 export const queryWithApiKey = (apiKey: string, endpoint: string) => async (
 	gqlQuery: string,
 	variables?: { [key: string]: string },
-) => {
+): Promise<GQLQueryResult> => {
 	const { selection, operation } = parseQuery(gqlQuery)
 
 	const query = {

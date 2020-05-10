@@ -7,6 +7,7 @@ import { AppSyncClient } from '../lib/appsync/appSyncClient'
 import { queryWithIAM } from '../lib/appsync/queryWithIAM'
 import { subscribe } from '../lib/appsync/subscribe'
 import { queryWithApiKey } from '../lib/appsync/queryWithApiKey'
+import { GQLQueryResult } from '../lib/gql-query-result'
 import * as chaiSubset from 'chai-subset'
 
 chai.use(chaiSubset)
@@ -26,7 +27,17 @@ export const appSyncAfterAll = async <W extends Store>(
 	)
 }
 
-const getQuery = (store: Store, client: AppSyncClient, userId?: string) => {
+/**
+ * This returns a function to run GQL queries (e.g. against an AppSync endpoint)
+ * by passing a GQL query string and key/value variables.
+ */
+export type GQLQueryFactory = (store: Store, client: AppSyncClient, userId?: string) => 
+	(gqlQuery: string, variables?: { [key :string]: string }) => Promise<GQLQueryResult>
+
+/**
+ * Run query against an Appsync endpoint, using either API Key or Cognito w/SignatureV4 auth
+ */
+const getAppSyncQuery: GQLQueryFactory = (store: Store, client: AppSyncClient, userId?: string) => {
 	if (client.authorization === 'API_KEY') {
 		if (userId) {
 			throw new Error('API_KEY authorization does not support user argument!')
@@ -47,7 +58,7 @@ const getQuery = (store: Store, client: AppSyncClient, userId?: string) => {
 /**
  * BDD steps for interacting with an AWS Appsync GQL API
  */
-export const appSyncStepRunners = () => [
+export const appSyncStepRunners = ({ getQuery }: { getQuery: GQLQueryFactory } = { getQuery: getAppSyncQuery }) => [
 	regexMatcher(/^the GQL endpoint is "([^"]+)"$/)(
 		async ([endpoint], _, runner) => {
 			const { appSyncClient: client } = runner.store
