@@ -49,6 +49,7 @@
     "node-fetch": "^2.6.0",
     "paho-mqtt": "^1.1.0",
     "toposort": "^2.0.2",
+    "uuid": "^8.0.0",
     "ws": "^7.3.0"
   },
   "devDependencies": {
@@ -60,6 +61,7 @@
     "@types/node": "^13.13.5",
     "@types/paho-mqtt": "^1.0.4",
     "@types/toposort": "^2.0.3",
+    "@types/uuid": "^7.0.3",
     "@types/ws": "^7.2.4",
     "husky": "^4.2.5",
     "jest": "^26.0.1",

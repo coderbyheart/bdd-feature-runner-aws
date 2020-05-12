@@ -2,7 +2,7 @@ import * as path from 'path'
 import { FeatureRunner } from '../lib/runner'
 import { storageStepRunners } from './storage'
 
-test('regexGroupMatcher', async () => {
+test('storageSteps', async () => {
 	const runner = new FeatureRunner<any>(
 		{},
 		{
