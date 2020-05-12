@@ -115,10 +115,13 @@ const reportFeature = (console: Console) => (result: FeatureResult) => {
 		if (result.runTime) {
 			i.push(chalk.blue(`⏱ ${result.runTime}ms`))
 		}
+		if (result.feature.tags?.length) {
+			i.push(
+				...result.feature.tags.map(({ name }) => chalk.blueBright(`${name}`)),
+			)
+		}
 	}
-	if (result.feature.tags?.length) {
-		i.push(result.feature.tags.map(({ name }) => chalk.blueBright(`${name}`)))
-	}
+
 	console.log(...i)
 }
 
