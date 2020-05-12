@@ -7,7 +7,6 @@ describe('regexGroupMatcher', () => {
 		const runner = new FeatureRunner<any>(
 			{},
 			{
-				reporters: [],
 				dir: path.join(process.cwd(), 'test', 'regex-group-matcher'),
 			},
 		)

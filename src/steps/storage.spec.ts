@@ -6,7 +6,6 @@ test('storageSteps', async () => {
 	const runner = new FeatureRunner<any>(
 		{},
 		{
-			reporters: [],
 			dir: path.join(process.cwd(), 'test', 'storage'),
 			retry: false,
 			store: {

@@ -8,7 +8,6 @@ describe('randomSteps', () => {
 		const runner = new FeatureRunner<any>(
 			{},
 			{
-				reporters: [],
 				dir: path.join(process.cwd(), 'test', 'random'),
 				retry: false,
 			},
@@ -27,7 +26,6 @@ describe('randomSteps', () => {
 		const runner = new FeatureRunner<any>(
 			{},
 			{
-				reporters: [],
 				dir: path.join(process.cwd(), 'test', 'random-custom'),
 				retry: false,
 			},
