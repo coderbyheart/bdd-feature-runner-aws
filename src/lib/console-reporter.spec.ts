@@ -45,7 +45,7 @@ describe('Console Reporter', () => {
 		expect(success).toEqual(true)
 
 		const logs = mockConsole.log.mock.calls
-			.map(args => args.join(' '))
+			.map((args) => args.join(' '))
 			.join('\n')
 
 		expect(stripColors(logs)).toMatch(
@@ -62,7 +62,7 @@ describe('Console Reporter', () => {
 		expect(success).toEqual(true)
 
 		const logs = mockConsole.log.mock.calls
-			.map(args => args.join(' '))
+			.map((args) => args.join(' '))
 			.join('\n')
 
 		expect(logs).not.toContain('Feature Summary:')

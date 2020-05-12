@@ -13,10 +13,12 @@ describe('replaceStoragePlaceholders', () => {
      }`,
 		],
 	])('replace the placeholder in %s', (template, expected) => {
-		expect(replaceStoragePlaceholders({
-      foo: 'bar',
-      'foo:bar': 'baz',
-    })(template)).toEqual(expected)
+		expect(
+			replaceStoragePlaceholders({
+				foo: 'bar',
+				'foo:bar': 'baz',
+			})(template),
+		).toEqual(expected)
 	})
 	it.each([
 		`{foo}`,
@@ -26,7 +28,7 @@ describe('replaceStoragePlaceholders', () => {
 		`{
       "principal": "{foo}"
      }`,
-	])('should error on unreplaced placeholders in %s', template => {
+	])('should error on unreplaced placeholders in %s', (template) => {
 		expect(() => replaceStoragePlaceholders({})(template)).toThrow(
 			StoreKeyUndefinedError,
 		)

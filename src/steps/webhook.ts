@@ -23,7 +23,7 @@ export const webhookStepRunners = <W extends WebhookStepRunnersWorld>({
 	regexMatcher<W>(
 		/^the Webhook Receiver "([^"]+)" should be called$/,
 	)(async ([MessageGroupId], _, runner) =>
-		r.receiveWebhookRequest(MessageGroupId, runner).then(r => r.body),
+		r.receiveWebhookRequest(MessageGroupId, runner).then((r) => r.body),
 	),
 	regexMatcher<W>(
 		/^"([^"]+)" of the webhook request body should equal "([^"]+)"$/,

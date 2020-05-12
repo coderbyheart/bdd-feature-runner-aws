@@ -22,7 +22,7 @@ export const appSyncBeforeAll = async <W extends Store>(
 export const appSyncAfterAll = async <W extends Store>(
 	runner: FeatureRunner<W>,
 ) => {
-	Object.keys(runner.store.appSyncClient.subscriptions).forEach(id =>
+	Object.keys(runner.store.appSyncClient.subscriptions).forEach((id) =>
 		runner.store.appSyncClient.subscriptions[id].disconnect(),
 	)
 }
@@ -31,13 +31,23 @@ export const appSyncAfterAll = async <W extends Store>(
  * This returns a function to run GQL queries (e.g. against an AppSync endpoint)
  * by passing a GQL query string and key/value variables.
  */
-export type GQLQueryFactory = (store: Store, client: AppSyncClient, userId?: string) => 
-	(gqlQuery: string, variables?: { [key :string]: string }) => Promise<GQLQueryResult>
+export type GQLQueryFactory = (
+	store: Store,
+	client: AppSyncClient,
+	userId?: string,
+) => (
+	gqlQuery: string,
+	variables?: { [key: string]: string },
+) => Promise<GQLQueryResult>
 
 /**
  * Run query against an Appsync endpoint, using either API Key or Cognito w/SignatureV4 auth
  */
-const getAppSyncQuery: GQLQueryFactory = (store: Store, client: AppSyncClient, userId?: string) => {
+const getAppSyncQuery: GQLQueryFactory = (
+	store: Store,
+	client: AppSyncClient,
+	userId?: string,
+) => {
 	if (client.authorization === 'API_KEY') {
 		if (userId) {
 			throw new Error('API_KEY authorization does not support user argument!')
@@ -58,7 +68,9 @@ const getAppSyncQuery: GQLQueryFactory = (store: Store, client: AppSyncClient, u
 /**
  * BDD steps for interacting with an AWS Appsync GQL API
  */
-export const appSyncStepRunners = ({ getQuery }: { getQuery: GQLQueryFactory } = { getQuery: getAppSyncQuery }) => [
+export const appSyncStepRunners = (
+	{ getQuery }: { getQuery: GQLQueryFactory } = { getQuery: getAppSyncQuery },
+) => [
 	regexMatcher(/^the GQL endpoint is "([^"]+)"$/)(
 		async ([endpoint], _, runner) => {
 			const { appSyncClient: client } = runner.store
@@ -210,10 +222,10 @@ export const appSyncStepRunners = ({ getQuery }: { getQuery: GQLQueryFactory } =
 		expect(client.response.data).to.have.property(client.selection)
 		const opResult = client.response.data[client.selection]
 		const checks: { [key: string]: (fragment: any) => any } = {
-			null: fragment => expect(fragment).to.equal(null),
-			undefined: fragment => expect(fragment).to.equal(undefined),
-			true: fragment => expect(fragment).to.equal(true),
-			false: fragment => expect(fragment).to.equal(false),
+			null: (fragment) => expect(fragment).to.equal(null),
+			undefined: (fragment) => expect(fragment).to.equal(undefined),
+			true: (fragment) => expect(fragment).to.equal(true),
+			false: (fragment) => expect(fragment).to.equal(false),
 		}
 		checks[expected](jsonata(exp).evaluate(opResult))
 		return opResult
@@ -224,13 +236,13 @@ export const appSyncStepRunners = ({ getQuery }: { getQuery: GQLQueryFactory } =
 			client.authorization = 'IAM'
 		},
 	),
-	regexMatcher(/^the GQL queries are authenticated with the API key "([^"]+)"$/)(
-		async ([apiKey], __, runner) => {
-			const { appSyncClient: client } = runner.store
-			client.authorization = 'API_KEY'
-			client.apiKey = apiKey
-		},
-	),
+	regexMatcher(
+		/^the GQL queries are authenticated with the API key "([^"]+)"$/,
+	)(async ([apiKey], __, runner) => {
+		const { appSyncClient: client } = runner.store
+		client.authorization = 'API_KEY'
+		client.apiKey = apiKey
+	}),
 	regexMatcher(/^I set the GQL variable "([^"]+)" to "([^"]+)"$/)(
 		async ([name, value], _, runner) => {
 			const { appSyncClient: client } = runner.store
@@ -314,7 +326,7 @@ export const appSyncStepRunners = ({ getQuery }: { getQuery: GQLQueryFactory } =
 		const { appSyncClient: client } = runner.store
 		const message =
 			client.subscriptionMessages[subscriptionId][
-			client.subscriptionMessages[subscriptionId].length - 1
+				client.subscriptionMessages[subscriptionId].length - 1
 			]
 		expect(jsonata(exp).evaluate(message)).to.equal(expected)
 	}),

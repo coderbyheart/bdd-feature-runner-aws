@@ -47,11 +47,11 @@ export class ConsoleReporter implements Reporter {
 		const stepReporter = reportStep(this.console)
 		const runResultReporter = reportRunResult(this.console)
 
-		result.featureResults.forEach(featureResult => {
+		result.featureResults.forEach((featureResult) => {
 			featureReporter(featureResult)
-			featureResult.scenarioResults.forEach(scenarioResult => {
+			featureResult.scenarioResults.forEach((scenarioResult) => {
 				scenarioReporter(scenarioResult)
-				scenarioResult.stepResults.forEach(stepResult => {
+				scenarioResult.stepResults.forEach((stepResult) => {
 					stepReporter(stepResult, this.config)
 				})
 			})
@@ -203,7 +203,7 @@ const reportStep = (console: Console) => (
 	if (result.result && config.printResults) {
 		;[
 			...(Array.isArray(result.result) ? result.result : [result.result]),
-		].forEach(r => {
+		].forEach((r) => {
 			console.log(chalk.cyan('   ◀ '), chalk.cyan(JSON.stringify(r)))
 		})
 	}
@@ -242,7 +242,7 @@ const reportSummary = (console: Console) => (result: RunResult) => {
 	const scenarioReporter = reportScenario(console)
 	result.featureResults
 		.filter(({ success }) => !success)
-		.forEach(featureResult => {
+		.forEach((featureResult) => {
 			const failedScenarios = featureResult.scenarioResults.filter(
 				({ success }) => !success,
 			)
@@ -289,22 +289,22 @@ const reportSummary = (console: Console) => (result: RunResult) => {
 	console.log(
 		'',
 		chalk.gray('Feature Summary:  '),
-		redIf(n => n > 0, failedFeatures),
+		redIf((n) => n > 0, failedFeatures),
 		chalk.gray('failed,'),
-		yellowIf(n => n > 0, skippedFeatures),
+		yellowIf((n) => n > 0, skippedFeatures),
 		chalk.gray('skipped,'),
-		redIf(n => n > 0, passedFeatures, failedFeatures),
+		redIf((n) => n > 0, passedFeatures, failedFeatures),
 		chalk.gray('passed,'),
 		chalk.gray(`${features} total`),
 	)
 	console.log(
 		'',
 		chalk.gray('Scenario Summary: '),
-		redIf(n => n > 0, failedScenarios),
+		redIf((n) => n > 0, failedScenarios),
 		chalk.gray('failed,'),
-		yellowIf(n => n > 0, skippedScenarios),
+		yellowIf((n) => n > 0, skippedScenarios),
 		chalk.gray('skipped,'),
-		redIf(n => n > 0, passedScenarioCount, failedScenarios),
+		redIf((n) => n > 0, passedScenarioCount, failedScenarios),
 		chalk.gray('passed,'),
 		chalk.gray(
 			`${scenarios} total${

@@ -10,7 +10,10 @@ export const queryWithIAM = (
 	SecretKey: string,
 	SessionToken: string,
 	endpoint: string,
-) => async (gqlQuery: string, variables?: { [key: string]: string }): Promise<GQLQueryResult> => {
+) => async (
+	gqlQuery: string,
+	variables?: { [key: string]: string },
+): Promise<GQLQueryResult> => {
 	const credentials = new Credentials(AccessKeyId, SecretKey, SessionToken)
 	const { selection, operation } = parseQuery(gqlQuery)
 	const graphQLEndpoint = parse(endpoint)

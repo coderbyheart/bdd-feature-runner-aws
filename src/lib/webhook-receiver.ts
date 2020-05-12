@@ -70,7 +70,9 @@ export class WebhookReceiver {
 			JSON.stringify(this.latestWebhookRequest.body),
 		)
 		if (RcvdMessageGroupId !== MessageGroupId) {
-			throw new Error(`Wrong webhook request received! Expected "${MessageGroupId}", got "${RcvdMessageGroupId}"`)
+			throw new Error(
+				`Wrong webhook request received! Expected "${MessageGroupId}", got "${RcvdMessageGroupId}"`,
+			)
 		}
 		return this.latestWebhookRequest
 	}

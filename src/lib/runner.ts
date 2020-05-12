@@ -54,7 +54,7 @@ export class FeatureRunner<W extends Store> {
 
 	async progress(type: string, info?: string) {
 		await Promise.all(
-			this.reporters.map(reporter => reporter.progress(type, info)),
+			this.reporters.map((reporter) => reporter.progress(type, info)),
 		)
 	}
 
@@ -99,11 +99,11 @@ export class FeatureRunner<W extends Store> {
 			featureResults,
 			store: this.store,
 		}
-		await Promise.all(this.reporters.map(reporter => reporter.report(result)))
+		await Promise.all(this.reporters.map((reporter) => reporter.report(result)))
 		await this.cleaners.reduce(
 			(promise, cleaner) =>
 				promise.then(async () =>
-					cleaner(this).then(res => this.progress('cleaner', res)),
+					cleaner(this).then((res) => this.progress('cleaner', res)),
 				),
 			Promise.resolve(),
 		)
@@ -166,7 +166,7 @@ export class FeatureRunner<W extends Store> {
 										const s: cucumber.GherkinDocument.Feature.IScenario = {
 											keyword: 'Scenario',
 											name: `${scenario.scenario?.name} (${values?.join(',')})`,
-											steps: scenario.scenario?.steps?.map(step => ({
+											steps: scenario.scenario?.steps?.map((step) => ({
 												...step,
 												text: replace(step.text || ''),
 												docString: step.docString
@@ -221,7 +221,7 @@ export class FeatureRunner<W extends Store> {
 		feature: FlightRecorder,
 	): Promise<ScenarioResult> {
 		/* eslint no-async-promise-executor: off */
-		return new Promise<ScenarioResult>(async resolve => {
+		return new Promise<ScenarioResult>(async (resolve) => {
 			// Run the scenario without delay
 			let lastResult: ScenarioResult = await this.runScenario(scenario, feature)
 			if (lastResult.success) {
@@ -235,7 +235,7 @@ export class FeatureRunner<W extends Store> {
 				maxDelay: cfg.maxDelay,
 			})
 			b.failAfter(cfg.failAfter)
-			b.on('ready', async num => {
+			b.on('ready', async (num) => {
 				const r = await this.runScenario(scenario, feature)
 				lastResult = {
 					...r,
@@ -287,7 +287,7 @@ export class FeatureRunner<W extends Store> {
 							stepResults.push(await this.runStep(step, feature))
 						}
 					})
-					.catch(async error => {
+					.catch(async (error) => {
 						await this.progress('step error', error)
 						stepResults.push({
 							success: false,

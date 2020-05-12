@@ -22,7 +22,7 @@ export type SkippableFeature = cucumber.GherkinDocument.IFeature & {
 }
 
 export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
-	const parsedFeatures = featureData.map(d => {
+	const parsedFeatures = featureData.map((d) => {
 		// Parse the feature files
 		const scanner = new TokenScanner(d.toString())
 		return parser.parse(scanner, matcher)
@@ -37,17 +37,17 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 	const featureNames = sortedByLast.map(({ name }) => name)
 
 	// Sort the features by the step 'I am run after the "..." feature' using toposort
-	const featureDependencies = sortedByLast.map(feature => {
+	const featureDependencies = sortedByLast.map((feature) => {
 		const bgSteps = feature.children
 			?.filter(({ background }) => background)
-			.map(bg =>
+			.map((bg) =>
 				(bg.background?.steps || []).filter(
 					({ text }) => text && afterRx.test(text),
 				),
 			)
 			.flat()
 
-		const runAfter = bgSteps?.map(afterStep => {
+		const runAfter = bgSteps?.map((afterStep) => {
 			const m = afterStep.text && afterRx.exec(afterStep.text)
 			if (!m) {
 				throw new Error(`Failed to find feature in ${afterStep.text}`)
@@ -61,7 +61,7 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 		})
 
 		if (runAfter?.length) {
-			return runAfter.map(dep => [dep, feature.name])
+			return runAfter.map((dep) => [dep, feature.name])
 		}
 
 		return [[feature.name, undefined]]
@@ -96,7 +96,7 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 	const only = parsedFeatures.filter(isOnly)
 	const onlyNames = only.map(({ name }) => name)
 
-	return sortedFeatures.map(f => {
+	return sortedFeatures.map((f) => {
 		const { tags, name: featureName } = f
 		const skip =
 			(tags || []).find(({ name }) => name === '@Skip') ||
@@ -115,7 +115,7 @@ export const fromDirectory = async (
 ): Promise<SkippableFeature[]> => {
 	const scan = path.join(path.resolve(dir), '*.feature')
 	const featureFiles = await glob(scan)
-	const features = parseFeatures(featureFiles.map(f => readFileSync(f)))
+	const features = parseFeatures(featureFiles.map((f) => readFileSync(f)))
 	if (!features.length) {
 		throw new Error(`No features found in directory ${dir}`)
 	}
