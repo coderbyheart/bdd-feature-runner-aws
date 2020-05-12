@@ -17,5 +17,6 @@ export * from './steps/webhook'
 export * from './steps/appSync'
 export * from './steps/cognito'
 export * from './steps/aws-sdk'
+export * from './steps/random'
 export * from './steps/storage'
-export { replaceStoragePlaceholders } from './lib/replaceStoragePlaceholders';
+export { replaceStoragePlaceholders } from './lib/replaceStoragePlaceholders'
