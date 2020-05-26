@@ -48,6 +48,7 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 			.flat()
 
 		const runAfter = bgSteps?.map((afterStep) => {
+			if (!afterStep) return
 			const m = afterStep.text && afterRx.exec(afterStep.text)
 			if (!m) {
 				throw new Error(`Failed to find feature in ${afterStep.text}`)
