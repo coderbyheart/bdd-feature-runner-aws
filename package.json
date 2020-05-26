@@ -95,6 +95,10 @@
   "lint-staged": {
     "*.{md,json,yaml,yml,js}": [
       "prettier --write"
+    ],
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "eslint --ext .js,.ts"
     ]
   },
   "jest": {
