@@ -65,19 +65,25 @@ export class RestClient {
 				`The content-type "${contentType}" of the response does not match accepted media-type ${headers.Accept}`,
 			)
 		}
-		if (/^application\/([^ /]+\+)?json$/.test(mediaType) === false) {
-			if (debug !== undefined)
-				debug(`[REST]`, JSON.stringify({ headers, body: await res.text() }))
-			throw new Error(
-				`The content-type "${contentType}" of the response is not JSON!`,
-			)
-		}
+
 		const statusCode: number = res.status
 		const contentLength: number = +(res.headers.get('content-length') ?? 0)
 		const h: Headers = {}
 		res.headers.forEach((v: string, k: string) => {
 			h[k] = v
 		})
+
+		if (
+			contentLength > 0 &&
+			/^application\/([^ /]+\+)?json$/.test(mediaType) === false
+		) {
+			if (debug !== undefined)
+				debug(`[REST]`, JSON.stringify({ headers, body: await res.text() }))
+			throw new Error(
+				`The content-type "${contentType}" of the response is not JSON!`,
+			)
+		}
+
 		this.response = {
 			statusCode,
 			headers: h,
