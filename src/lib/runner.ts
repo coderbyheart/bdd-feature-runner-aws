@@ -38,8 +38,8 @@ export class FeatureRunner<W extends Store> {
 	) {
 		this.world = world
 		this.featuresDir = options.dir
-		this.reporters = options.reporters || [new ConsoleReporter()]
-		this.store = options.store || {}
+		this.reporters = options.reporters ?? [new ConsoleReporter()]
+		this.store = options.store ?? {}
 		this.retry = options.retry === undefined ? true : options.retry
 	}
 
@@ -48,11 +48,11 @@ export class FeatureRunner<W extends Store> {
 		return this
 	}
 
-	cleanup(fn: Cleaner) {
+	cleanup(fn: Cleaner): void {
 		this.cleaners.push(fn)
 	}
 
-	async progress(type: string, info?: string) {
+	async progress(type: string, info?: string): Promise<void> {
 		await Promise.all(
 			this.reporters.map((reporter) => reporter.progress(type, info)),
 		)
@@ -146,9 +146,8 @@ export class FeatureRunner<W extends Store> {
 					}
 
 					// This is a Scenario Outline with examples
-					if (scenario.scenario?.examples?.length) {
-						let scenarioOutline = scenario.scenario
-						const example = scenarioOutline.examples?.[0]
+					if ((scenario.scenario?.examples?.length ?? 0) > 0) {
+						const example = scenario.scenario?.examples?.[0]
 						if (example) {
 							const header = example.tableHeader?.cells?.map(
 								({ value }) => value,
@@ -168,11 +167,11 @@ export class FeatureRunner<W extends Store> {
 											name: `${scenario.scenario?.name} (${values?.join(',')})`,
 											steps: scenario.scenario?.steps?.map((step) => ({
 												...step,
-												text: replace(step.text || ''),
+												text: replace(step.text ?? ''),
 												docString: step.docString
 													? {
 															...step.docString,
-															content: replace(step.docString.content || ''),
+															content: replace(step.docString.content ?? ''),
 													  }
 													: undefined,
 											})),
@@ -191,7 +190,7 @@ export class FeatureRunner<W extends Store> {
 							)
 						}
 					} else {
-						const s = scenario.scenario || scenario.background
+						const s = scenario.scenario ?? scenario.background
 						if (s) {
 							if (this.retry) {
 								scenarioResults.push(
@@ -344,7 +343,7 @@ export class FeatureRunner<W extends Store> {
 				return matchedRunner
 			}
 			const r = runner(interpolatedStep)
-			if (r) {
+			if (r !== false) {
 				return r
 			}
 			return undefined

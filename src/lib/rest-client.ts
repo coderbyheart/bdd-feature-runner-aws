@@ -23,7 +23,7 @@ export class RestClient {
 	response: {
 		headers: Headers
 		statusCode: number
-		body: any
+		body: unknown
 	} = {
 		headers: {},
 		statusCode: -1,
@@ -33,9 +33,9 @@ export class RestClient {
 	async request(
 		method: string,
 		path: string,
-		queryString?: object,
+		queryString?: { [key: string]: string },
 		extraHeaders?: Headers,
-		body?: any,
+		body?: unknown,
 		debug?: (...args: any) => void,
 	): Promise<string> {
 		const headers: Headers = {
@@ -45,17 +45,18 @@ export class RestClient {
 		const url = `${this.endpoint.replace(/\/+$/, '')}/${path.replace(
 			/^\/+/,
 			'',
-		)}${toQueryString(queryString || {})}`
+		)}${toQueryString(queryString ?? {})}`
 		const res = await fetch(url, {
 			method,
 			headers,
-			body: body
-				? typeof body !== 'string'
-					? JSON.stringify(body)
-					: body
-				: undefined,
+			body:
+				body !== undefined
+					? typeof body !== 'string'
+						? JSON.stringify(body)
+						: body
+					: undefined,
 		})
-		const contentType: string = res.headers.get('content-type') || '',
+		const contentType: string = res.headers.get('content-type') ?? '',
 			mediaType: string = contentType.split(';')[0]
 		if (!headers.Accept.includes(mediaType)) {
 			if (debug !== undefined)
@@ -72,7 +73,7 @@ export class RestClient {
 			)
 		}
 		const statusCode: number = res.status
-		const contentLength: number = +(res.headers.get('content-length') || 0)
+		const contentLength: number = +(res.headers.get('content-length') ?? 0)
 		const h: Headers = {}
 		res.headers.forEach((v: string, k: string) => {
 			h[k] = v

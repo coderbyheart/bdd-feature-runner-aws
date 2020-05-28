@@ -11,9 +11,7 @@ describe('load-features', () => {
 			expect(fnames.indexOf('First')).toBeLessThan(fnames.indexOf('Second'))
 
 			const feature2 = features.find(({ name }) => name === 'Second')
-			expect(
-				feature2 && feature2.dependsOn.length && feature2.dependsOn[0].name,
-			).toEqual('First')
+			expect(feature2?.dependsOn[0].name).toEqual('First')
 		})
 
 		test('and adding multiple should be possible', async () => {
@@ -24,7 +22,7 @@ describe('load-features', () => {
 			expect(fnames.indexOf('Last')).toBeGreaterThan(fnames.indexOf('First'))
 			expect(fnames.indexOf('Last')).toBeGreaterThan(fnames.indexOf('Second'))
 			const lastFeature = features.find(({ name }) => name === 'Last')
-			const deps = lastFeature && lastFeature.dependsOn.map(({ name }) => name)
+			const deps = lastFeature?.dependsOn.map(({ name }) => name)
 			expect(deps).toContain('First')
 			expect(deps).toContain('Second')
 		})
@@ -57,8 +55,8 @@ describe('load-features', () => {
 		})
 	})
 
-	it.only('should fail if no feature are found in the directory', () => {
-		expect(
+	it('should fail if no feature are found in the directory', () => {
+		void expect(
 			fromDirectory(path.join(process.cwd(), 'test', 'foo')),
 		).rejects.toThrowError(/^No features found in directory .+foo$/)
 	})

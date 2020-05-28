@@ -3,10 +3,13 @@ import * as chai from 'chai'
 import { expect } from 'chai'
 import { regexGroupMatcher } from '../lib/regexGroupMatcher'
 import * as chaiSubset from 'chai-subset'
+import { InterpolatedStep, StepRunnerFunc, Store } from '../lib/runner'
 
 chai.use(chaiSubset)
 
-export const storageStepRunners = () => [
+export const storageStepRunners = (): ((
+	step: InterpolatedStep,
+) => false | StepRunnerFunc<Store>)[] => [
 	regexGroupMatcher(
 		/^"(?<exp>[^"]+)" should (?<equalOrMatch>(?:equal|be)|match) (?:(?<jsonMatch>this JSON)|"(?<stringMatch>[^"]+)"|(?<numMatch>[0-9]+)|(?<boolMatch>true|false))$/,
 	)(
@@ -18,7 +21,7 @@ export const storageStepRunners = () => [
 			let expected
 
 			if (jsonMatch) {
-				if (!step.interpolatedArgument) {
+				if (step.interpolatedArgument === undefined) {
 					throw new Error('Must provide argument!')
 				}
 				expected = JSON.parse(step.interpolatedArgument)
@@ -41,7 +44,7 @@ export const storageStepRunners = () => [
 	),
 	regexGroupMatcher(/^I escape this JSON into "(?<storeName>[^"]+)"$/)(
 		async ({ storeName }, step, runner) => {
-			if (!step.interpolatedArgument) {
+			if (step.interpolatedArgument === undefined) {
 				throw new Error('Must provide argument!')
 			}
 			const j = JSON.parse(step.interpolatedArgument)

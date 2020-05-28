@@ -1,4 +1,9 @@
-import { FeatureRunner, Store } from '../lib/runner'
+import {
+	FeatureRunner,
+	Store,
+	InterpolatedStep,
+	StepRunnerFunc,
+} from '../lib/runner'
 import { regexMatcher } from '../lib/regexMatcher'
 import * as chai from 'chai'
 import { expect } from 'chai'
@@ -21,7 +26,7 @@ export const appSyncBeforeAll = async <W extends Store>(
 
 export const appSyncAfterAll = async <W extends Store>(
 	runner: FeatureRunner<W>,
-) => {
+): Promise<void> => {
 	Object.keys(runner.store.appSyncClient.subscriptions).forEach((id) =>
 		runner.store.appSyncClient.subscriptions[id].disconnect(),
 	)
@@ -49,12 +54,12 @@ const getAppSyncQuery: GQLQueryFactory = (
 	userId?: string,
 ) => {
 	if (client.authorization === 'API_KEY') {
-		if (userId) {
+		if (userId !== undefined) {
 			throw new Error('API_KEY authorization does not support user argument!')
 		}
 		return queryWithApiKey(client.apiKey!, client.endpoint)
 	} else {
-		const prefix = userId ? `cognito:${userId}` : `cognito`
+		const prefix = userId !== undefined ? `cognito:${userId}` : `cognito`
 		const {
 			[`${prefix}:AccessKeyId`]: AccessKeyId,
 			[`${prefix}:SecretKey`]: SecretKey,
@@ -70,7 +75,7 @@ const getAppSyncQuery: GQLQueryFactory = (
  */
 export const appSyncStepRunners = (
 	{ getQuery }: { getQuery: GQLQueryFactory } = { getQuery: getAppSyncQuery },
-) => [
+): ((step: InterpolatedStep) => false | StepRunnerFunc<Store>)[] => [
 	regexMatcher(/^the GQL endpoint is "([^"]+)"$/)(
 		async ([endpoint], _, runner) => {
 			const { appSyncClient: client } = runner.store
@@ -80,7 +85,7 @@ export const appSyncStepRunners = (
 	regexMatcher(/^I execute this GQL query(?: as "([^"]+)")?$/)(
 		async ([userId], step, runner) => {
 			const { appSyncClient: client } = runner.store
-			if (!step.interpolatedArgument) {
+			if (step.interpolatedArgument === undefined) {
 				throw new Error('Must provide argument!')
 			}
 			const q = step.interpolatedArgument.replace(/\n\s*/g, ' ')
@@ -106,7 +111,7 @@ export const appSyncStepRunners = (
 	regexMatcher(/^the GQL query result should contain this error$/)(
 		async (_, step, runner) => {
 			const { appSyncClient: client } = runner.store
-			if (!step.interpolatedArgument) {
+			if (step.interpolatedArgument === undefined) {
 				throw new Error('Must provide argument!')
 			}
 			expect(client.response).to.have.property('errors')
@@ -120,7 +125,7 @@ export const appSyncStepRunners = (
 		/^(?:"([^"]+)" of )?the GQL response should (equal|match) this JSON$/,
 	)(async ([exp, equalOrMatch], step, runner) => {
 		const { appSyncClient: client } = runner.store
-		if (!step.interpolatedArgument) {
+		if (step.interpolatedArgument === undefined) {
 			throw new Error('Must provide argument!')
 		}
 		const j = JSON.parse(step.interpolatedArgument)
@@ -183,7 +188,7 @@ export const appSyncStepRunners = (
 		const { appSyncClient: client } = runner.store
 		expect(client.response).to.have.property('data')
 		expect(client.response.data).to.have.property(client.selection)
-		if (!step.interpolatedArgument) {
+		if (step.interpolatedArgument === undefined) {
 			throw new Error('Must provide argument!')
 		}
 		const j = JSON.parse(step.interpolatedArgument)
@@ -253,7 +258,7 @@ export const appSyncStepRunners = (
 		/^I set the GQL variable "([^"]+)" to (the stringified version of )?this JSON$/,
 	)(async ([name, stringify], step, runner) => {
 		const { appSyncClient: client } = runner.store
-		if (!step.interpolatedArgument) {
+		if (step.interpolatedArgument === undefined) {
 			throw new Error('Must provide argument!')
 		}
 		const j = JSON.parse(step.interpolatedArgument)
@@ -271,7 +276,7 @@ export const appSyncStepRunners = (
 		}
 		let variables
 		if (withVariables) {
-			if (!step.interpolatedArgument) {
+			if (step.interpolatedArgument === undefined) {
 				throw new Error('Must provide argument!')
 			}
 			variables = JSON.parse(step.interpolatedArgument)
@@ -290,19 +295,19 @@ export const appSyncStepRunners = (
 		/^I register a "([^"]+)" listener on the "([^"]+)" GQL subscription(?: as "([^"]+)")?( that matches this JSON)?$/,
 	)(async ([listener, subscriptionId, userId, matchJSON], step, runner) => {
 		const { appSyncClient: client } = runner.store
-		if (client.listenerSubscription[listener]) {
+		if (client.listenerSubscription[listener] !== undefined) {
 			console.warn(`The listener "${listener}" is already registered!`)
 		}
 		let key = subscriptionId
 		if (userId) {
 			key = `${key}:${userId}`
 		}
-		if (!client.subscriptions[key]) {
+		if (client.subscriptions[key] === undefined) {
 			throw new Error(`Subscription "${key}" not found!`)
 		}
 		let matcher = {}
 		if (matchJSON) {
-			if (!step.interpolatedArgument) {
+			if (step.interpolatedArgument === undefined) {
 				throw new Error('Must provide argument!')
 			}
 			matcher = JSON.parse(step.interpolatedArgument)
@@ -315,7 +320,7 @@ export const appSyncStepRunners = (
 		/^I should receive a message on the "([^"]+)" GQL subscription listener?$/,
 	)(async ([listener], _, runner) => {
 		const { appSyncClient: client } = runner.store
-		if (!client.listenerSubscription[listener]) {
+		if (client.listenerSubscription[listener] === undefined) {
 			throw new Error(`Listener "${listener}" not found!`)
 		}
 		return client.listenerSubscription[listener].listenerMessage(listener)

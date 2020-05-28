@@ -25,7 +25,7 @@ export const queryWithApiKey = (apiKey: string, endpoint: string) => async (
 		},
 	}
 
-	const response = await fetch(graphQLEndpoint.href!, options)
+	const response = await fetch(graphQLEndpoint.href, options)
 	return {
 		operation,
 		selection,

@@ -1,6 +1,7 @@
 import * as AWS from 'aws-sdk'
 import { regexMatcher } from '../lib/regexMatcher'
 import * as cognito from './cognito'
+import { InterpolatedStep, StepRunnerFunc, Store } from '../lib/runner'
 
 /**
  * BDD steps for using the AWS SDK directly
@@ -15,12 +16,12 @@ export const awsSdkStepRunners = ({
 			[key: string]: string
 		}
 	}
-}) => [
+}): ((step: InterpolatedStep) => false | StepRunnerFunc<Store>)[] => [
 	regexMatcher(/^I execute "([^"]+)" of the AWS ([^ ]+) SDK( with)?$/)(
 		async ([method, api, withArgs], step, runner, flightRecorder) => {
 			let argument
 			if (withArgs) {
-				if (!step.interpolatedArgument) {
+				if (step.interpolatedArgument === undefined) {
 					throw new Error('Must provide argument!')
 				}
 				try {
@@ -57,7 +58,7 @@ export const awsSdkStepRunners = ({
 			}
 			const args = {
 				region,
-				...(constructorArgs && constructorArgs[api]),
+				...constructorArgs?.[api],
 				...extraArgs,
 			}
 			// @ts-ignore

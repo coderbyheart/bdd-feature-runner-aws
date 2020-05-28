@@ -41,7 +41,7 @@ export class ConsoleReporter implements Reporter {
 		this.console = config?.console ?? console
 	}
 
-	async report(result: RunResult) {
+	async report(result: RunResult): Promise<void> {
 		const featureReporter = reportFeature(this.console)
 		const scenarioReporter = reportScenario(this.console)
 		const stepReporter = reportStep(this.console)
@@ -72,19 +72,19 @@ export class ConsoleReporter implements Reporter {
 		}
 	}
 
-	async progress(type: string, info?: string) {
+	async progress(type: string, info?: string): Promise<void> {
 		if (!this.config.printProgress) {
 			return
 		}
 		const i = [' ']
-		if (this.config.printProgressTimestamps) {
+		if (this.config.printProgressTimestamps === true) {
 			i.push(chalk.grey(`[${new Date().toISOString()}]`))
 		}
 		i.push(chalk.magenta(' ℹ '), chalk.cyan(type))
-		if (info) {
+		if (info !== undefined) {
 			i.push(chalk.grey(info))
 		}
-		if (this.lastProgress) {
+		if (this.lastProgress !== undefined) {
 			i.push(chalk.blue(`⏱ +${Date.now() - this.lastProgress}ms`))
 		}
 		this.lastProgress = Date.now()
@@ -112,10 +112,10 @@ const reportFeature = (console: Console) => (result: FeatureResult) => {
 
 		i.push(result.success ? chalk.green(' 💯') : chalk.red.bold(' ❌'))
 
-		if (result.runTime) {
+		if (result.runTime !== undefined) {
 			i.push(chalk.blue(`⏱ ${result.runTime}ms`))
 		}
-		if (result.feature.tags?.length) {
+		if (Array.isArray(result.feature.tags) && result.feature.tags.length > 0) {
 			i.push(
 				...result.feature.tags.map(({ name }) => chalk.blueBright(`${name}`)),
 			)
@@ -134,14 +134,14 @@ const reportScenario = (console: Console) => (result: ScenarioResult) => {
 	const i = [chalk.gray(type) + ':']
 	if (result.skipped) {
 		i.push(chalk.magenta(' ↷ '), chalk.magenta('(skipped)'))
-		if (result.scenario.name) {
+		if (typeof result.scenario.name === 'string') {
 			i.push(chalk.gray(result.scenario.name))
 		}
 	} else {
-		if (result.scenario.name) {
+		if (typeof result.scenario.name === 'string') {
 			i.push(chalk.yellow(result.scenario.name))
 		}
-		if (result.runTime) {
+		if (result.runTime !== undefined) {
 			i.push(chalk.blue(`⏱ ${result.runTime}ms`))
 		}
 		if (result.tries > 1) {
@@ -160,7 +160,7 @@ const reportRunResult = (console: Console) => (
 	const i = [
 		success ? chalk.green(' 💯 ALL PASS 👍 ') : chalk.red.bold(' ❌ FAIL 👎 '),
 	]
-	if (runTime) {
+	if (runTime !== undefined) {
 		i.push(chalk.blue(`⏱ ${runTime}ms`))
 	}
 	if (success) {
@@ -183,7 +183,7 @@ const reportStep = (console: Console) => (
 		if (result.success) {
 			i.push(chalk.green(' ✔ '))
 			i.push(chalk.yellow(result.step.interpolatedText))
-			if (result.runTime) {
+			if (result.runTime !== undefined) {
 				i.push(chalk.blue(`⏱ ${result.runTime}ms`))
 			}
 		} else {
@@ -192,7 +192,7 @@ const reportStep = (console: Console) => (
 		}
 	}
 	console.log(...i)
-	if (result.step.interpolatedArgument) {
+	if (result.step.interpolatedArgument !== undefined) {
 		console.log(
 			chalk.yellow.dim('   ▶ '),
 			chalk.yellow.dim(
@@ -200,10 +200,11 @@ const reportStep = (console: Console) => (
 			),
 		)
 	}
-	if (result.result && config.printResults) {
-		;[
+	if (result.result !== undefined && config.printResults) {
+		const results = [
 			...(Array.isArray(result.result) ? result.result : [result.result]),
-		].forEach((r) => {
+		]
+		results.forEach((r) => {
 			console.log(chalk.cyan('   ◀ '), chalk.cyan(JSON.stringify(r)))
 		})
 	}

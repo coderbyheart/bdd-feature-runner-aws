@@ -2,10 +2,11 @@ import * as jsonata from 'jsonata'
 import { RestClient } from '../lib/rest-client'
 import { expect } from 'chai'
 import { regexMatcher } from '../lib/regexMatcher'
+import { InterpolatedStep, StepRunnerFunc, Store } from '../lib/runner'
 
 export const restStepRunners = (
 	{ client }: { client: RestClient } = { client: new RestClient() },
-) => [
+): ((step: InterpolatedStep) => false | StepRunnerFunc<Store>)[] => [
 	regexMatcher(/^the ([^ ]+) header is "([^"]+)"$/)(async ([name, value]) => {
 		client.headers[name] = value
 	}),
@@ -21,7 +22,7 @@ export const restStepRunners = (
 		},
 	),
 	regexMatcher(/^I GET ([^ ]+) with this query$/)(async ([path], step) => {
-		if (!step.interpolatedArgument) {
+		if (step.interpolatedArgument === undefined) {
 			throw new Error('Must provide argument!')
 		}
 		const j = JSON.parse(step.interpolatedArgument)
@@ -41,7 +42,7 @@ export const restStepRunners = (
 		},
 	),
 	regexMatcher(/^the response should equal this JSON$/)(async (_, step) => {
-		if (!step.interpolatedArgument) {
+		if (step.interpolatedArgument === undefined) {
 			throw new Error('Must provide argument!')
 		}
 		const j = JSON.parse(step.interpolatedArgument)
@@ -74,7 +75,7 @@ export const restStepRunners = (
 	),
 	regexMatcher(/^"([^"]+)" of the response body should equal this JSON$/)(
 		async ([exp], step) => {
-			if (!step.interpolatedArgument) {
+			if (step.interpolatedArgument === undefined) {
 				throw new Error('Must provide argument!')
 			}
 			const j = JSON.parse(step.interpolatedArgument)
@@ -86,7 +87,7 @@ export const restStepRunners = (
 	),
 	regexMatcher(/^I (POST|PUT|PATCH) (?:to )?([^ ]+) with this JSON$/)(
 		async ([method, path], step) => {
-			if (!step.interpolatedArgument) {
+			if (step.interpolatedArgument === undefined) {
 				throw new Error('Must provide argument!')
 			}
 			const j = JSON.parse(step.interpolatedArgument)

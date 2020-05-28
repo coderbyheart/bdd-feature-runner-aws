@@ -5,6 +5,7 @@ import { regexMatcher } from '../lib/regexMatcher'
 import { WebhookReceiver } from '../lib/webhook-receiver'
 import * as chaiSubset from 'chai-subset'
 import { regexGroupMatcher } from '../lib/regexGroupMatcher'
+import { StepRunnerFunc, Store, InterpolatedStep } from '../lib/runner'
 
 chai.use(chaiSubset)
 
@@ -14,7 +15,7 @@ export const webhookStepRunners = ({
 }: {
 	region: string
 	webhookQueue: string
-}) => {
+}): ((step: InterpolatedStep) => false | StepRunnerFunc<Store>)[] => {
 	let r: WebhookReceiver
 	return [
 		regexMatcher(
@@ -35,7 +36,7 @@ export const webhookStepRunners = ({
 		}),
 		regexMatcher(/^the webhook request body should (equal|match) this JSON$/)(
 			async ([equalOrMatch], step) => {
-				if (!step.interpolatedArgument) {
+				if (step.interpolatedArgument === undefined) {
 					throw new Error('Must provide argument!')
 				}
 				const j = JSON.parse(step.interpolatedArgument)

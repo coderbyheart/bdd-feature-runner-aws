@@ -35,7 +35,7 @@ const createRunner = (config?: Partial<Config>) => {
 	}
 }
 
-const stripColors = (s: string) => s.replace(/\u001b\[[0-9;]+m/g, '')
+const stripColors = (s: string) => s.replace(/\u001b\[[0-9;]+m/g, '') // eslint-disable-line no-control-regex
 
 describe('Console Reporter', () => {
 	it('should print a summary if printSummary=true', async () => {
@@ -49,10 +49,10 @@ describe('Console Reporter', () => {
 			.join('\n')
 
 		expect(stripColors(logs)).toMatch(
-			/Feature Summary:   0 failed, 0 skipped, 3 passed, 3 total/,
+			/Feature Summary: {3}0 failed, 0 skipped, 3 passed, 3 total/,
 		)
 		expect(stripColors(logs)).toMatch(
-			/Scenario Summary:  0 failed, 0 skipped, 10 passed, 10 total/,
+			/Scenario Summary: {2}0 failed, 0 skipped, 10 passed, 10 total/,
 		)
 	})
 	it('should not print a summary if printSummary=false', async () => {

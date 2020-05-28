@@ -12,7 +12,7 @@ export class GQLSubscription {
 	private readonly client: Client
 	private readonly subscribers: {
 		id: string
-		matches: (msg: object) => boolean
+		matches: (msg: { [key: string]: string }) => boolean
 		onMatch: ((msg: any) => void)[]
 	}[] = []
 	private readonly subscriberMessages: { [key: string]: any[] } = {}
@@ -30,8 +30,7 @@ export class GQLSubscription {
 				data: { [selection]: result },
 			} = JSON.parse(msg.payloadString)
 			this.messages.push(result)
-			// tslint:disable-next-line:no-floating-promises
-			runner.progress('<GQL@', msg.payloadString).catch(() => {})
+			void runner.progress('<GQL@', msg.payloadString)
 			this.notifySubcribers(result)
 		}
 
@@ -58,10 +57,10 @@ export class GQLSubscription {
 		})
 	}
 
-	notifySubcribers = (result: any) => {
+	notifySubcribers = (result: { [key: string]: string }): void => {
 		this.subscribers.forEach(({ id, matches, onMatch }) => {
 			if (matches(result)) {
-				if (!this.subscriberMessages[id]) {
+				if (this.subscriberMessages[id] !== undefined) {
 					this.subscriberMessages[id] = []
 				}
 				this.subscriberMessages[id].push(result)
@@ -70,7 +69,10 @@ export class GQLSubscription {
 		})
 	}
 
-	addListener = (listenerId: string, matcher: object) => {
+	addListener = (
+		listenerId: string,
+		matcher: { [key: string]: string },
+	): void => {
 		this.subscribers.push({
 			id: listenerId,
 			matches: (message: any): boolean => {
@@ -87,17 +89,20 @@ export class GQLSubscription {
 		this.messages.forEach((message) => this.notifySubcribers(message))
 	}
 
-	disconnect = () => {
+	disconnect = (): void => {
 		this.client.disconnect()
 	}
 
 	/**
 	 * Returns a message for the given subscription id within a certain time
 	 */
-	listenerMessage = async (listenerId: string, timeout = 5000) => {
+	listenerMessage = async (
+		listenerId: string,
+		timeout = 5000,
+	): Promise<any> => {
 		if (
-			this.subscriberMessages[listenerId] &&
-			this.subscriberMessages[listenerId].length
+			Array.isArray(this.subscriberMessages[listenerId]) &&
+			this.subscriberMessages[listenerId].length > 0
 		) {
 			return this.subscriberMessages[listenerId][
 				this.subscriberMessages[listenerId].length - 1

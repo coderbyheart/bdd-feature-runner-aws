@@ -13,7 +13,7 @@ export const subscribe = async (
 		result: any
 	}>,
 	variables?: { [key: string]: string },
-) => {
+): Promise<GQLSubscription> => {
 	const q = subscription.replace(/\n\s*/g, ' ')
 	await runner.progress('GQL@', `${q}`)
 	if (variables) {
@@ -22,7 +22,7 @@ export const subscribe = async (
 
 	const { selection, result } = await query(q, variables)
 
-	if (result.errors) {
+	if (result.errors !== undefined) {
 		throw new Error(
 			`MQTT subscription failed: ${JSON.stringify(result.errors)}`,
 		)
@@ -32,7 +32,7 @@ export const subscribe = async (
 
 	await runner.progress('<GQL', JSON.stringify(data))
 
-	if (!extensions) {
+	if (extensions === undefined) {
 		throw new Error('MQTT subscription response did not return extensions')
 	}
 

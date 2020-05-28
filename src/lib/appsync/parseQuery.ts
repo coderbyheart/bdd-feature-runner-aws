@@ -1,16 +1,22 @@
 import { FieldNode, getOperationAST, parse as gqlParse } from 'graphql'
 
-export const parseQuery = (gqlQuery: string) => {
+export const parseQuery = (
+	gqlQuery: string,
+): {
+	selection: string
+	operation: string
+} => {
 	let selection = ''
 	let operation = ''
 
 	try {
 		const op = getOperationAST(gqlParse(gqlQuery), undefined)
-		operation = op && op.name ? op.name.value : ''
+		operation = op?.name?.value ?? ''
+		const selections = op?.selectionSet.selections
 		selection =
-			(op &&
-				op.selectionSet.selections.length &&
-				(op.selectionSet.selections[0] as FieldNode).name.value) ||
+			(Array.isArray(selections) &&
+				selections.length > 0 &&
+				(selections[0] as FieldNode).name.value) ||
 			''
 	} catch (error) {
 		throw new TypeError(`Invalid GQL query: ${gqlQuery}: "${error.message}"`)

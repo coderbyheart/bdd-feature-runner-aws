@@ -41,16 +41,17 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 		const bgSteps = feature.children
 			?.filter(({ background }) => background)
 			.map((bg) =>
-				(bg.background?.steps || []).filter(
-					({ text }) => text && afterRx.test(text),
+				(bg.background?.steps ?? []).filter(
+					({ text }) => typeof text === 'string' && afterRx.test(text),
 				),
 			)
 			.flat()
 
 		const runAfter = bgSteps?.map((afterStep) => {
-			if (!afterStep) return
-			const m = afterStep.text && afterRx.exec(afterStep.text)
-			if (!m) {
+			if (afterStep === undefined) return
+			const m =
+				typeof afterStep.text === 'string' && afterRx.exec(afterStep.text)
+			if (!Array.isArray(m)) {
 				throw new Error(`Failed to find feature in ${afterStep.text}`)
 			}
 			if (!featureNames.includes(m[1])) {
@@ -61,7 +62,7 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 			return m[1]
 		})
 
-		if (runAfter?.length) {
+		if (Array.isArray(runAfter) && runAfter.length > 0) {
 			return runAfter.map((dep) => [dep, feature.name])
 		}
 
@@ -100,12 +101,12 @@ export const parseFeatures = (featureData: Buffer[]): SkippableFeature[] => {
 	return sortedFeatures.map((f) => {
 		const { tags, name: featureName } = f
 		const skip =
-			(tags || []).find(({ name }) => name === '@Skip') ||
+			(tags ?? []).find(({ name }) => name === '@Skip') ||
 			(onlyNames.length && !onlyNames.includes(featureName))
 
 		return {
 			...f,
-			skip: !!skip,
+			skip: skip === true,
 			dependsOn: dependencies(f),
 		}
 	})

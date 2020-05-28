@@ -16,7 +16,9 @@ export const defaultRetryConfig: RetryConfiguration = {
 export const retryConfiguration = (
 	scenario: cucumber.GherkinDocument.Feature.IScenario,
 ): RetryConfiguration => {
-	const retryTag = scenario?.tags?.find((tag) => /^@Retry=/.test(`${tag.name}`))
+	const retryTag = scenario?.tags?.find((tag) =>
+		tag.name?.startsWith('@Retry='),
+	)
 	if (!retryTag) return defaultRetryConfig
 	return (
 		retryTag?.name

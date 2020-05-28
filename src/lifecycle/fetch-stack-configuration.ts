@@ -14,7 +14,7 @@ export const fetchStackConfiguration = async ({
 	if (!Stacks) {
 		throw new Error(`Unknown stack "${StackName}"!`)
 	}
-	const Outputs = (Stacks && Stacks[0].Outputs) || []
+	const Outputs = Stacks[0]?.Outputs ?? []
 	return Outputs.reduce(
 		(outputs: any, { OutputKey, OutputValue }) => ({
 			...outputs,

@@ -20,6 +20,6 @@ export const regexMatcher = <W extends Store>(rx: RegExp) => (
 	if (!m) {
 		return false
 	}
-	return (runner: FeatureRunner<W>, feature: FlightRecorder) =>
+	return (runner: FeatureRunner<W>, feature: FlightRecorder): Promise<any> =>
 		stepRunner(m.slice(1), step, runner, feature)
 }

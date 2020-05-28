@@ -42,7 +42,7 @@ export const queryWithIAM = (
 		headers: httpRequest.headers,
 	}
 
-	const response = await fetch(graphQLEndpoint.href!, options)
+	const response = await fetch(graphQLEndpoint.href, options)
 	return {
 		operation,
 		selection,

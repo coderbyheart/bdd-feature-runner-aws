@@ -20,6 +20,6 @@ export const regexGroupMatcher = <W extends Store>(rx: RegExp) => (
 	if (!m || m.groups === undefined) {
 		return false
 	}
-	return (runner: FeatureRunner<W>, feature: FlightRecorder) =>
+	return (runner: FeatureRunner<W>, feature: FlightRecorder): Promise<any> =>
 		stepRunner(m.groups as { [key: string]: string }, step, runner, feature)
 }

@@ -1,18 +1,19 @@
 import { regexGroupMatcher } from '../lib/regexGroupMatcher'
 import { v4 } from 'uuid'
+import { InterpolatedStep, StepRunnerFunc, Store } from '../lib/runner'
 
 export type RandomStringGenerators = { [key: string]: () => string }
 
 export const randomStepRunners = (
 	{ generators }: { generators: RandomStringGenerators } = {
-		generators: { UUID: () => v4() },
+		generators: { UUID: (): string => v4() },
 	},
-) => [
+): ((step: InterpolatedStep) => false | StepRunnerFunc<Store>)[] => [
 	regexGroupMatcher(
 		/^I have a random (?<generatorId>[^ ]+) in "(?<storeName>[^"]+)"$/,
 	)(async ({ generatorId, storeName }, _, runner) => {
-		const generator = generators[generatorId as string]
-		if (!generator) {
+		const generator = generators[generatorId]
+		if (generator === undefined) {
 			throw new Error(`Unknown random string generator "${generatorId}"!`)
 		}
 		runner.store[storeName] = generator()

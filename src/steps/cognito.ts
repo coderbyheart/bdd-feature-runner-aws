@@ -1,4 +1,4 @@
-import { Store } from '../lib/runner'
+import { Store, InterpolatedStep, StepRunnerFunc } from '../lib/runner'
 import { regexMatcher } from '../lib/regexMatcher'
 import { CognitoIdentity, CognitoIdentityServiceProvider } from 'aws-sdk'
 
@@ -34,7 +34,7 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerWorld>({
 	developerProviderName: string
 	region: string
 	emailAsUsername?: boolean
-}) => {
+}): ((step: InterpolatedStep) => false | StepRunnerFunc<W>)[] => {
 	const ci = new CognitoIdentity({
 		region,
 	})
@@ -46,10 +46,10 @@ export const cognitoStepRunners = <W extends CognitoStepRunnerWorld>({
 			async ([userId], __, runner, { flags, settings }) => {
 				flags[cognitoAuthentication] = true
 				const prefix = userId ? `cognito:${userId}` : `cognito`
-				if (!runner.store[`${prefix}:IdentityId`]) {
+				if (runner.store[`${prefix}:IdentityId`] === undefined) {
 					const Username = userId ? `${userId}-${randSeq()}` : randSeq()
 					const email = `${Username.toLowerCase()}@example.com`
-					const cognitoUsername = emailAsUsername ? email : Username
+					const cognitoUsername = emailAsUsername === true ? email : Username
 					await runner.progress(
 						'Cognito',
 						`Registering user ${cognitoUsername}`,

@@ -3,7 +3,7 @@ import { FeatureRunner } from './runner'
 
 type WebhookRequest = {
 	headers: { [key: string]: string }
-	body: object
+	body: { [key: string]: string }
 }
 
 /**
@@ -56,7 +56,7 @@ export class WebhookReceiver {
 			MessageGroupId: RcvdMessageGroupId,
 		} = Attributes as SQS.Types.MessageSystemAttributeMap
 		this.latestWebhookRequest = {
-			headers: Object.keys(attrs || {}).reduce(
+			headers: Object.keys(attrs ?? {}).reduce(
 				(hdrs: { [key: string]: string }, key) => {
 					hdrs[key] = attrs[key].StringValue as string
 					return hdrs
@@ -80,7 +80,7 @@ export class WebhookReceiver {
 	/**
 	 * Deletes all messages in a Queue instead of using purge (which can only be used every 60 seconds)
 	 */
-	async clearQueue() {
+	async clearQueue(): Promise<void> {
 		const { Messages } = await this.sqs
 			.receiveMessage({
 				QueueUrl: this.queueUrl,

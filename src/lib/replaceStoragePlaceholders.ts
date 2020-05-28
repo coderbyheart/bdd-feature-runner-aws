@@ -11,7 +11,7 @@ export const replaceStoragePlaceholders = (data: { [key: string]: any }) => (
 		text,
 	)
 	const missed = interpolated.match(/\{[\w:]+\}/g)
-	if (missed && missed.length) {
+	if (missed !== null && missed.length > 0) {
 		throw new StoreKeyUndefinedError(
 			missed.map((k) => k.slice(1, -1)),
 			data,
