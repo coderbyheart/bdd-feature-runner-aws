@@ -3,9 +3,9 @@ import { RestClient } from '../lib/rest-client'
 import { expect } from 'chai'
 import { regexMatcher } from '../lib/regexMatcher'
 
-const client = new RestClient()
-
-export const restStepRunners = () => [
+export const restStepRunners = (
+	{ client }: { client: RestClient } = { client: new RestClient() },
+) => [
 	regexMatcher(/^the ([^ ]+) header is "([^"]+)"$/)(async ([name, value]) => {
 		client.headers[name] = value
 	}),

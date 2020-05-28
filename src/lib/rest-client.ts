@@ -36,6 +36,7 @@ export class RestClient {
 		queryString?: object,
 		extraHeaders?: Headers,
 		body?: any,
+		debug?: (...args: any) => void,
 	): Promise<string> {
 		const headers: Headers = {
 			...this.headers,
@@ -57,19 +58,15 @@ export class RestClient {
 		const contentType: string = res.headers.get('content-type') || '',
 			mediaType: string = contentType.split(';')[0]
 		if (!headers.Accept.includes(mediaType)) {
-			console.debug(
-				`[REST]`,
-				JSON.stringify({ headers, body: await res.text() }),
-			)
+			if (debug !== undefined)
+				debug(`[REST]`, JSON.stringify({ headers, body: await res.text() }))
 			throw new Error(
 				`The content-type "${contentType}" of the response does not match accepted media-type ${headers.Accept}`,
 			)
 		}
 		if (/^application\/([^ /]+\+)?json$/.test(mediaType) === false) {
-			console.debug(
-				`[REST]`,
-				JSON.stringify({ headers, body: await res.text() }),
-			)
+			if (debug !== undefined)
+				debug(`[REST]`, JSON.stringify({ headers, body: await res.text() }))
 			throw new Error(
 				`The content-type "${contentType}" of the response is not JSON!`,
 			)
